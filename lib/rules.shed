@@ -15,7 +15,8 @@ val results = object {
     public def success fun[T] => (value: T, remaining: StringSource) =>
         Success[T](value, remaining);
         
-    public val failure = Failure;
+    public def failure fun(expected: String, actual: String) =>
+        Failure(Error(expected, actual));
 };
 
 public val rules = object {
@@ -24,16 +25,18 @@ public val rules = object {
     
     public def firstOf fun(name: String, rules: List[Rule]) =>
         fun(tokens: Sequence[Token]) => do {
-            val results = lazySequenceables.map[Rule, ParseResult](
+            val ruleResults = lazySequenceables.map[Rule, ParseResult](
                 fun(rule: Rule) => rule(tokens),
                 rules
             );
             val successes = lazySequenceables.filter[ParseResult](
                 fun(result: ParseResult) => result.isSuccess(),
-                results
+                ruleResults
             );
             return sequenceables.head[ParseResult](successes)
-                .valueOrElse[ParseResult](fun() => Failure());
+                .valueOrElse[ParseResult](fun() => withNextToken(tokens, fun(token: Token) =>
+                    results.failure(name, describeToken(token))
+                ));
         }
         
     public def tokenOfType fun(name: String) =>
@@ -43,7 +46,7 @@ public val rules = object {
                     // TODO: should have function to get an option of both head and tail at the same time
                     return results.success[String](token.value(), tokens.tail());
                 } else
-                    results.failure(Error(name, describeToken(token)))
+                    results.failure(name, describeToken(token))
             )
     
     public def token fun(name: String, value: String) =>
@@ -52,7 +55,7 @@ public val rules = object {
                 if and(token.name().equals(name), token.value().equals(value)) then
                     results.success[String](token.value(), tokens.tail())
                 else
-                    results.failure(Error(describeTokenNameAndValue(name, value), describeToken(token)))
+                    results.failure(describeTokenNameAndValue(name, value), describeToken(token))
             )
             
     def describeToken fun(token: Token) =>
@@ -64,7 +67,7 @@ public val rules = object {
     def withNextToken fun(tokens: Sequence[Token], func: Function[Token, ParseResult[String]]) =>
         sequences.head[Token](tokens)
             .map[Token, ParseResult[String]](func)
-            .valueOrElse[ParseResult](fun() => results.failure(Error("token", "end of token sequence")))
+            .valueOrElse[ParseResult](fun() => results.failure("token", "end of token sequence"))
             
     public def map fun[F, T] => (rule: Rule, func: Function[F, T]) =>
         fun(tokens: Sequence[Token]) =>

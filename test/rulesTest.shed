@@ -69,6 +69,37 @@ public val rulesTest = listOf[TestCase](
             listOf(Token("keyword", "true", source("true"))),
             "true"
         )
+    ),
+    
+    TestCase("rules.tokenOfType succeeds with value of token if token type matches", fun() =>
+        assertSuccessfulParse[String](
+            rules.tokenOfType("keyword"),
+            listOf(Token("keyword", "true", source("true"))),
+            "true"
+        )
+    ),
+    
+    TestCase("rules.firstOf returns first success", fun() =>
+        assertSuccessfulParse[String](
+            rules.firstOf("literal", listOf(
+                rules.token("keyword", "true"),
+                rules.token("keyword", "false"),
+                rules.token("keyword", "unit")
+            )),
+            listOf(Token("keyword", "false", source("false"))),
+            "false"
+        )
+    ),
+    
+    TestCase("rules.firstOf fails if no sub-rules match", fun() =>
+        assertFailedParseWithError[String](
+            rules.firstOf("literal", listOf(
+                rules.token("keyword", "true"),
+                rules.token("keyword", "false")
+            )),
+            listOf(Token("identifier", "blah", source("blah"))),
+            Error("literal", "identifier \"blah\"")
+        )
     )
 );
     
