@@ -43,7 +43,7 @@ public val rules = object {
                     // TODO: should have function to get an option of both head and tail at the same time
                     return results.success[String](token.value(), tokens.tail());
                 } else
-                    results.failure()
+                    results.failure(Error(name, describeToken(token.name(), token.value())))
             ).valueOrElse[ParseResult](fun() => results.failure())
     
     public def token fun(name: String, value: String) =>
