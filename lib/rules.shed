@@ -38,26 +38,31 @@ public val rules = object {
         
     public def tokenOfType fun(name: String) =>
         fun(tokens: Sequence[Token]) =>
-            sequences.head[Token](tokens).map[Token, ParseResult](fun(token: Token) =>
+            withNextToken(tokens, fun(token: Token) =>
                 if token.name().equals(name) then do {
                     // TODO: should have function to get an option of both head and tail at the same time
                     return results.success[String](token.value(), tokens.tail());
                 } else
                     results.failure(Error(name, describeToken(token.name(), token.value())))
-            ).valueOrElse[ParseResult](fun() => results.failure())
+            )
     
     public def token fun(name: String, value: String) =>
         fun(tokens: Sequence[Token]) =>
-            sequences.head[Token](tokens).map[ParseResult](fun(token: Token) =>
+            withNextToken(tokens, fun(token: Token) =>
                 if and(token.name().equals(name), token.value().equals(value)) then
                     results.success[String](token.value(), tokens.tail())
                 else
                     results.failure(Error(describeToken(name, value), describeToken(token.name(), token.value())))
-            ).valueOrElse[ParseResult](fun() => results.failure(Error("token", "end of token sequence")))
+            )
             
     def describeToken fun(name: String, value: String) =>
         name.concat(" \"").concat(value).concat("\"");
-    
+        
+    def withNextToken fun(tokens: Sequence[Token], func: Function[Token, ParseResult[String]]) =>
+        sequences.head[Token](tokens)
+            .map[Token, ParseResult[String]](func)
+            .valueOrElse[ParseResult](fun() => results.failure(Error("token", "end of token sequence")))
+            
     public def map fun[F, T] => (rule: Rule, func: Function[F, T]) =>
         fun(tokens: Sequence[Token]) =>
             rule(tokens).map[T](func)
