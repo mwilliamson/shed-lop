@@ -1,0 +1,4 @@
+package lop.results;
+
+// TODO: should be an interface
+public def ParseResult class() => {}
