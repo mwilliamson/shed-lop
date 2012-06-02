@@ -53,7 +53,7 @@ public val rules = object {
                     results.success[String](token.value(), tokens.tail())
                 else
                     results.failure(Error(describeToken(name, value), describeToken(token.name(), token.value())))
-            ).valueOrElse[ParseResult](fun() => results.failure())
+            ).valueOrElse[ParseResult](fun() => results.failure(Error("token", "end of token sequence")))
             
     def describeToken fun(name: String, value: String) =>
         name.concat(" \"").concat(value).concat("\"");
