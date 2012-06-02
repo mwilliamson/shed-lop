@@ -9,13 +9,13 @@ import lop.Token;
 import lop.results.ParseResult;
 import lop.results.Success;
 import lop.results.Failure;
+import lop.Error;
 
 val results = object {
     public def success fun[T] => (value: T, remaining: StringSource) =>
         Success[T](value, remaining);
         
-    public def failure fun() =>
-        Failure();
+    public val failure = Failure;
 };
 
 public val rules = object {
@@ -52,8 +52,11 @@ public val rules = object {
                 if and(token.name().equals(name), token.value().equals(value)) then
                     results.success[String](token.value(), tokens.tail())
                 else
-                    results.failure()
+                    results.failure(Error(describeToken(name, value), describeToken(token.name(), token.value())))
             ).valueOrElse[ParseResult](fun() => results.failure())
+            
+    def describeToken fun(name: String, value: String) =>
+        name.concat(" \"").concat(value).concat("\"");
     
     public def map fun[F, T] => (rule: Rule, func: Function[F, T]) =>
         fun(tokens: Sequence[Token]) =>

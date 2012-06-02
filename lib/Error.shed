@@ -1,0 +1,12 @@
+package lop;
+
+public def Error class(myExpected: String, myActual: String) => {
+    public def expected fun() => myExpected;
+    public def actual fun() => myActual;
+    
+    public def equals fun(other: Error) =>
+        and(myExpected.equals(other.expected()), myActual.equals(other.actual()));
+        
+    public def toRepresentation fun() =>
+        "expected ".concat(expected()).concat(" but got ").concat(actual());
+};

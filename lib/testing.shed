@@ -21,6 +21,25 @@ public val testing = object {
             else
                 MatchResult(true, "");
     };
+    
+    public def isFailureWithError fun (error: Error) => object {
+        public def describeSelf fun() => "failure with error: ".concat(representation(error));
+        
+        public def matches fun(result: ParseResult) =>
+            matchesWithDescription(result).matches();
+        
+        public def describeMismatch fun(result: ParseResult) =>
+            matchesWithDescription(result).mismatchDescription();
+            
+        public def matchesWithDescription fun(result: Result) =>
+            if result.isSuccess() then
+                MatchResult(false, "was not failure, was ".concat(representation(result)))
+            else if not(result.error().equals(error)) then
+                MatchResult(false, "error was ".concat(representation(result.error())))
+            else
+                MatchResult(true, "");
+        
+    };
 
     public def isSuccess fun[T] => (node: T) => object {
         public def describeSelf fun() => "success with node ".concat(representation(node));

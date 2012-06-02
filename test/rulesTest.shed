@@ -17,14 +17,17 @@ import lop.StringSource;
 import lop.strings.createStringSource;
 import lop.testing.isSuccess;
 import lop.testing.isFailure;
+import lop.testing.isFailureWithError;
+import lop.Error;
 
 def source fun(value: String) => createStringSource(value, "raw string");
 
 public val rulesTest = listOf[TestCase](
     TestCase("rules.token fails if input token is of wrong type", fun() =>
-        assertFailedParse[String](
+        assertFailedParseWithError[String](
             rules.token("identifier", "true"),
-            listOf(Token("keyword", "true", source("true")))
+            listOf(Token("keyword", "true", source("true"))),
+            Error("identifier \"true\"", "keyword \"true\"")
         )
     ),
     
@@ -64,6 +67,10 @@ def stringSource fun(string: String) =>
 
 def assertFailedParse fun[T] => (rule: Rule[T], input: List[Token]) => do {
     return assertParse[T](rule, input, isFailure);
+};
+
+def assertFailedParseWithError fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do {
+    return assertParse[T](rule, input, isFailureWithError(error));
 };
 
 def assertSuccessfulParse fun[T] => (rule: Rule[T], input: List[Token], value: T) => do {

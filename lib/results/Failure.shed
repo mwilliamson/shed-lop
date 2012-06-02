@@ -1,8 +1,9 @@
 package lop.results;
 
-public def Failure class() => {
-    public def map fun[R] => () => Failure();
+public def Failure class(myError: Error) => {
+    public def map fun[R] => () => Failure(myError);
     public def isSuccess fun() => false;
+    public def error fun() => myError;
     
     public def toRepresentation fun() =>
         "Failure"
