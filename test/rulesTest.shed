@@ -32,9 +32,10 @@ public val rulesTest = listOf[TestCase](
     ),
     
     TestCase("rules.token fails if input token has wrong value", fun() =>
-        assertFailedParse[String](
+        assertFailedParseWithError[String](
             rules.token("identifier", "true"),
-            listOf(Token("identifier", "false", source("false")))
+            listOf(Token("identifier", "false", source("false"))),
+            Error("identifier \"true\"", "identifier \"false\"")
         )
     ),
     
