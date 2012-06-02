@@ -43,7 +43,7 @@ public val rules = object {
                     // TODO: should have function to get an option of both head and tail at the same time
                     return results.success[String](token.value(), tokens.tail());
                 } else
-                    results.failure(Error(name, describeToken(token.name(), token.value())))
+                    results.failure(Error(name, describeToken(token)))
             )
     
     public def token fun(name: String, value: String) =>
@@ -52,10 +52,13 @@ public val rules = object {
                 if and(token.name().equals(name), token.value().equals(value)) then
                     results.success[String](token.value(), tokens.tail())
                 else
-                    results.failure(Error(describeToken(name, value), describeToken(token.name(), token.value())))
+                    results.failure(Error(describeTokenNameAndValue(name, value), describeToken(token)))
             )
             
-    def describeToken fun(name: String, value: String) =>
+    def describeToken fun(token: Token) =>
+        describeTokenNameAndValue(token.name(), token.value())
+        
+    def describeTokenNameAndValue fun(name: String, value: String) =>
         name.concat(" \"").concat(value).concat("\"");
         
     def withNextToken fun(tokens: Sequence[Token], func: Function[Token, ParseResult[String]]) =>
