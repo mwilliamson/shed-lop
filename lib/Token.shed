@@ -1,17 +1,21 @@
 package lop;
 
+import values;
+
 public def Token class(name: String, value: String, source: StringSource) => {
     members {
         name fun() => name,
         value fun() => value,
-        source fun() => source
+        source fun() => source,
+        equals fun(other: Token) => asValue().equals(other),
+        toRepresentation
     }
     
-    def equals fun(other: Token) => and(
-        name.equals(other.name()),
-        value.equals(other.value()),
-        source.equals(other.source())
-    );
+    def asValue fun() => values.asValue[Token](Token(name, value, source), Token, listOf(
+        values.attribute[Token, String]("name", fun(token: Token) => token.name()),
+        values.attribute[Token, String]("value", fun(token: Token) => token.value()),
+        values.attribute[Token, String]("source", fun(token: Token) => token.source())
+    ));
     
     def toRepresentation fun() =>
         "Token("

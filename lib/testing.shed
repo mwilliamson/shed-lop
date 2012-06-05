@@ -2,8 +2,11 @@ package lop;
 
 import sequences;
 import lazySequences;
+import strings;
 
 import duck.MatchResult;
+
+import lop.Token;
 
 public val testing = object {
     public val isFailure = object {
