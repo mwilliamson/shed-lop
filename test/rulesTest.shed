@@ -19,6 +19,7 @@ import lop.testing.isSuccess;
 import lop.testing.isFailure;
 import lop.testing.isFailureWithError;
 import lop.Error;
+import lop.results.Failure;
 
 def source fun(value: String) => createStringSource(value, "raw string");
 
@@ -100,9 +101,31 @@ public val rulesTest = listOf[TestCase](
             listOf(Token("identifier", "blah", source("blah"))),
             Error("literal", "identifier \"blah\"")
         )
+    ),
+    
+    TestCase("rules.map does nothing to failures", fun() =>
+        assertFailedParseWithError[String](
+            rules.map[Unit, Unit](failingRule),
+            emptyList,
+            Error("<expected>", "<actual>")
+        )
+    ),
+    
+    TestCase("rules.map maps value of success using passed function", fun() =>
+        assertSuccessfulParse[String](
+            rules.map[String, String](
+                rules.token("identifier", "blah"),
+                fun(value: String) => value.concat(value)
+            ),
+            listOf(Token("identifier", "blah", source("blah"))),
+            "blahblah"
+        )
     )
 );
-    
+
+def failingRule fun(tokens: Sequence[Token]) =>
+    Failure(Error("<expected>", "<actual>"));
+
 def stringSource fun(string: String) =>
     createStringSource(string, "raw string");
 
