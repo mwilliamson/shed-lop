@@ -44,8 +44,8 @@ public val testing = object {
         
     };
 
-    public def isSuccess fun[T] => (node: T) => object {
-        public def describeSelf fun() => "success with node ".concat(representation(node));
+    public def isSuccess fun[T] => (matcher: Matcher[T]) => object {
+        public def describeSelf fun() => "success with value ".concat(matcher.describeSelf());
         
         public def matches fun(result: ParseResult) =>
             matchesWithDescription(result).matches();
@@ -55,10 +55,8 @@ public val testing = object {
             
         public def matchesWithDescription fun(result: Result) =>
             if result.isSuccess() then
-                if not(classOf(result.value()).equals(classOf(node))) then
-                    MatchResult(false, "was node of type: ".concat(representation(classOf(result.value()))))
-                else if not(result.value().equals(node)) then
-                    MatchResult(false, "node was: ".concat(representation(result.value())))
+                if not(matcher.matches(result.value())) then
+                    MatchResult(false, "value didn't match: ".concat(matcher.describeMismatch(result.value())))
                 else if not(sequences.isNil(result.remaining())) then
                     MatchResult(false, "entire input was not consumed, remaining was: ".concat(
                         strings.joinSequence(", ", lazySequences.map[Token, String](representation, result.remaining()))

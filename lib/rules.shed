@@ -73,15 +73,15 @@ public val rules = object {
         fun(tokens: Sequence[Token]) =>
             rule(tokens).map[T](func)
             
-    public def sequence fun[T] => (rules: Sequenceable[Rule]) =>
-        sequence2[T](rules.toSequence());
+    public def sequence fun(rules: Sequenceable[Rule]) =>
+        sequence2(rules.toSequence());
     
-    public def sequence2 fun[T] => (rules: Sequence[Rule]) =>
+    public def sequence2 fun(rules: Sequence[Rule]) =>
         fun(tokens: Sequence[Token]) =>
             sequences.head[Rule](rules).map[ParseResult](fun(rule: Rule) => do {
                 val result = rule(tokens);
                 return if result.isSuccess() then
-                    sequence2[T](rules.tail())(result.remaining())
+                    sequence2(rules.tail())(result.remaining())
                 else
                     result;
             })
