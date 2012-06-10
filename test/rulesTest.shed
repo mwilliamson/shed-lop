@@ -125,11 +125,11 @@ public val rulesTest = listOf[TestCase](
     
     TestCase("rules.sequence fails if element of sequence is missing", fun() =>
         assertFailedParseWithError[String](
-            rules.sequence(listOf(
-                rules.token("keyword", "if"),
-                rules.tokenOfType("identifier"),
-                rules.token("keyword", "then")
-            )),
+            rules.sequence()
+                .next(rules.token("keyword", "if"))
+                .next(rules.tokenOfType("identifier"))
+                .next(rules.token("keyword", "then"))
+                .noValue(),
             listOf(Token("keyword", "if", source("if")), Token("keyword", "then", source("then"))),
             Error("identifier", "keyword \"then\"")
         )
@@ -137,17 +137,33 @@ public val rulesTest = listOf[TestCase](
     
     TestCase("rules.sequence succeeds if all elements match", fun() =>
         assertSuccessfulParse[String](
-            rules.sequence(listOf(
-                rules.token("keyword", "if"),
-                rules.tokenOfType("identifier"),
-                rules.token("keyword", "then")
-            )),
+            rules.sequence()
+                .next(rules.token("keyword", "if"))
+                .next(rules.tokenOfType("identifier"))
+                .next(rules.token("keyword", "then"))
+                .noValue(),
             listOf(
                 Token("keyword", "if", source("if")),
                 Token("identifier", "go", source("go")),
                 Token("keyword", "then", source("then"))
             ),
             anything
+        )
+    ),
+    
+    TestCase("rules.sequence().extract pulls out a single value from a sequence", fun() =>
+        assertSuccessfulParse[String](
+            rules.sequence()
+                .next(rules.token("symbol", "("))
+                .capture(rules.tokenOfType("identifier"))
+                .next(rules.token("symbol", ")"))
+                .extract(),
+            listOf(
+                Token("symbol", "(", source("(")),
+                Token("identifier", "go", source("go")),
+                Token("symbol", ")", source(")"))
+            ),
+            equalTo[String]("go")
         )
     )
 );

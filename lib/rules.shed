@@ -20,10 +20,19 @@ val results = object {
 };
 
 public val rules = object {
+    members {
+        firstOf,
+        tokenOfType,
+        token,
+        map,
+        sequence,
+        sequences rulesSequences
+    }
+    
     // TODO: should be type Rule[T] = Fun(Sequence[Token]) => ParseResult[T]
     def Rule class() => {}
     
-    public def firstOf fun(name: String, rules: List[Rule]) =>
+    def firstOf fun(name: String, rules: List[Rule]) =>
         fun(tokens: Sequence[Token]) => do {
             val ruleResults = lazySequenceables.map[Rule, ParseResult](
                 fun(rule: Rule) => rule(tokens),
@@ -39,7 +48,7 @@ public val rules = object {
                 ));
         }
         
-    public def tokenOfType fun(name: String) =>
+    def tokenOfType fun(name: String) =>
         fun(tokens: Sequence[Token]) =>
             withNextToken(tokens, fun(token: Token) =>
                 if token.name().equals(name) then do {
@@ -49,7 +58,7 @@ public val rules = object {
                     results.failure(name, describeToken(token))
             )
     
-    public def token fun(name: String, value: String) =>
+    def token fun(name: String, value: String) =>
         fun(tokens: Sequence[Token]) =>
             withNextToken(tokens, fun(token: Token) =>
                 if and(token.name().equals(name), token.value().equals(value)) then
@@ -69,22 +78,73 @@ public val rules = object {
             .map[Token, ParseResult[String]](func)
             .valueOrElse[ParseResult](fun() => results.failure("token", "end of token sequence"))
             
-    public def map fun[F, T] => (rule: Rule, func: Function[F, T]) =>
+    def map fun[F, T] => (rule: Rule, func: Function[F, T]) =>
         fun(tokens: Sequence[Token]) =>
             rule(tokens).map[T](func)
+
+    // type SequenceRule[T] = Rule[T] | Capture[T];
+
+    def sequence fun() =>
+        PartialSequenceRule(sequences.nil);
+        
+    def PartialSequenceRule class(rules: Sequence[SequenceRule[Any]]) => {
+        members {
+            noValue,
+            extract,
+            next,
+            capture
+        }
+
+        def next fun(rule: Rule[T]) => PartialSequenceRule(sequences.cons[Rule](rule, rules));
+        
+        def capture fun(rule: Rule[T]) => next(Capture(rule));
+
+        def noValue fun() => 
+            fun(tokens: Sequence[Tokens]) =>
+                sequenceToRuleValues(sequences.reversed[Rule](rules))(tokens)
+                    .map[Unit](fun() => ())
             
-    public def sequence fun(rules: Sequenceable[Rule]) =>
-        sequence2(rules.toSequence());
+        def extract fun() =>
+            fun(tokens: Sequence[Tokens]) =>
+                sequenceToRuleValues(sequences.reversed[Rule](rules))(tokens)
+                    .map[Nothing](fun(values: Sequence) => values.head())
+    }
     
-    public def sequence2 fun(rules: Sequence[Rule]) =>
+    def sequenceToRuleValues fun(rules: Sequence[SequenceRule[Any]]) =>
         fun(tokens: Sequence[Token]) =>
             sequences.head[Rule](rules).map[ParseResult](fun(rule: Rule) => do {
-                val result = rule(tokens);
+                val result = applySequenceRule(rule, tokens);
                 return if result.isSuccess() then
-                    sequence2(rules.tail())(result.remaining())
+                    sequenceToRuleValues(rules.tail())(result.remaining())
+                        .map[Nothing](fun(values: Sequence) =>
+                            match(rule,
+                                matchClass(Capture, fun() => sequences.cons[Unit](result.value(), values)),
+                                matchDefault(fun() => values)
+                            )
+                            
+                        )
                 else
                     result;
             })
-            .valueOrElse[ParseResult](fun() => results.success[Unit]((), tokens))
-                
+            .valueOrElse[ParseResult](fun() => results.success[Unit](sequences.nil, tokens))
+    
+    def applySequenceRule fun(rule: SequenceRule[T], tokens: Sequence[Token]) =>
+        match(rule,
+            matchClass(Capture, fun(capture: Capture[T]) => capture.apply(tokens)),
+            matchDefault(fun() => rule(tokens))
+        );
+    
+    val rulesSequences = object {
+        members {
+            capture
+        }
+        
+        def capture fun[T] => (rule: Rule[T]) => Capture(rule);
+    };
+        
+    def Capture class(rule: Rule) => {
+        members {
+            apply rule
+        }
+    }
 };
