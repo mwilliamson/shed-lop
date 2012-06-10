@@ -129,7 +129,7 @@ public val rulesTest = listOf[TestCase](
                 .next(rules.token("keyword", "if"))
                 .next(rules.tokenOfType("identifier"))
                 .next(rules.token("keyword", "then"))
-                .noValue(),
+                .end(),
             listOf(Token("keyword", "if", source("if")), Token("keyword", "then", source("then"))),
             Error("identifier", "keyword \"then\"")
         )
@@ -141,7 +141,7 @@ public val rulesTest = listOf[TestCase](
                 .next(rules.token("keyword", "if"))
                 .next(rules.tokenOfType("identifier"))
                 .next(rules.token("keyword", "then"))
-                .noValue(),
+                .end(),
             listOf(
                 Token("keyword", "if", source("if")),
                 Token("identifier", "go", source("go")),
@@ -157,7 +157,7 @@ public val rulesTest = listOf[TestCase](
                 .next(rules.token("symbol", "("))
                 .capture(rules.tokenOfType("identifier"))
                 .next(rules.token("symbol", ")"))
-                .extract(),
+                .end(),
             listOf(
                 Token("symbol", "(", source("(")),
                 Token("identifier", "go", source("go")),

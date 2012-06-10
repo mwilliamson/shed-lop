@@ -85,26 +85,34 @@ public val rules = object {
     // type SequenceRule[T] = Rule[T] | Capture[T];
 
     def sequence fun() =>
-        PartialSequenceRule(sequences.nil);
+        NoCaptureSequenceRule(sequences.nil);
         
-    def PartialSequenceRule class(rules: Sequence[SequenceRule[Any]]) => {
+    def NoCaptureSequenceRule class(rules: Sequence[SequenceRule[Any]]) => {
         members {
-            noValue,
-            extract,
             next,
-            capture
+            capture,
+            end
         }
 
-        def next fun(rule: Rule[T]) => PartialSequenceRule(sequences.cons[Rule](rule, rules));
+        def next fun(rule: Rule[T]) => NoCaptureSequenceRule(sequences.cons[Rule](rule, rules));
         
-        def capture fun(rule: Rule[T]) => next(Capture(rule));
+        def capture fun(rule: Rule[T]) => OneCaptureSequenceRule(sequences.cons[Rule](Capture(rule), rules));
 
-        def noValue fun() => 
+        def end fun() => 
             fun(tokens: Sequence[Tokens]) =>
                 sequenceToRuleValues(sequences.reversed[Rule](rules))(tokens)
                     .map[Unit](fun() => ())
-            
-        def extract fun() =>
+    }
+    
+    def OneCaptureSequenceRule class(rules: Sequence[SequenceRule[Any]]) => {
+        members {
+            next,
+            end
+        }
+
+        def next fun(rule: Rule[T]) => OneCaptureSequenceRule(sequences.cons[Rule](rule, rules));
+
+        def end fun() =>
             fun(tokens: Sequence[Tokens]) =>
                 sequenceToRuleValues(sequences.reversed[Rule](rules))(tokens)
                     .map[Nothing](fun(values: Sequence) => values.head())
