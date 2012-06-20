@@ -20,13 +20,13 @@ public val testing = object {
             
         public def matchesWithDescription fun(result: Result) =>
             if result.isSuccess() then
-                MatchResult(false, "was not failure, was ".concat(representation(result)))
+                MatchResult(false, "was not failure, was ".concat(represent(result)))
             else
                 MatchResult(true, "");
     };
     
     public def isFailureWithError fun (error: Error) => object {
-        public def describeSelf fun() => "failure with error: ".concat(representation(error));
+        public def describeSelf fun() => "failure with error: ".concat(represent(error));
         
         public def matches fun(result: ParseResult) =>
             matchesWithDescription(result).matches();
@@ -36,9 +36,9 @@ public val testing = object {
             
         public def matchesWithDescription fun(result: Result) =>
             if result.isSuccess() then
-                MatchResult(false, "was not failure, was ".concat(representation(result)))
+                MatchResult(false, "was not failure, was ".concat(represent(result)))
             else if not(result.error().equals(error)) then
-                MatchResult(false, "error was ".concat(representation(result.error())))
+                MatchResult(false, "error was ".concat(represent(result.error())))
             else
                 MatchResult(true, "");
         
@@ -59,11 +59,11 @@ public val testing = object {
                     MatchResult(false, "value didn't match: ".concat(matcher.describeMismatch(result.value())))
                 else if not(sequences.isNil(result.remaining())) then
                     MatchResult(false, "entire input was not consumed, remaining was: ".concat(
-                        strings.joinSequence(", ", lazySequences.map[Token, String](representation, result.remaining()))
+                        strings.joinSequence(", ", lazySequences.map(represent, result.remaining()))
                     ))
                 else
                     MatchResult(true, "")
             else
-                MatchResult(false, "was not success, was ".concat(representation(result)))
+                MatchResult(false, "was not success, was ".concat(represent(result)))
     }
 };

@@ -9,6 +9,5 @@ public def Failure class(myError: Error) => {
     public def isSuccess fun() => false;
     public def error fun() => myError;
     
-    public def toRepresentation fun() =>
-        "Failure"
+    public def represent fun() => "Failure"
 }

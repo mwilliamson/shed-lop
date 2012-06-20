@@ -23,9 +23,9 @@ public def StringSource class(string: String, myDescription: String, myRange: Ra
     public def sliceFrom fun(index: Double) =>
         StringSource(string, description(), Range(myRange.start().add(index), myRange.end()));
     
-    public def toRepresentation fun() =>
+    public def represent fun() =>
         "StringSource("
             .concat("string=").concat(asString())
-            .concat("range=").concat(representation(myRange))
+            .concat("range=").concat(represent(myRange))
             .concat(")");
 };

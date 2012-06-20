@@ -8,7 +8,7 @@ public def Token class(name: String, value: String, source: StringSource) => {
         value fun() => value,
         source fun() => source,
         equals fun(other: Token) => asValue().equals(other),
-        toRepresentation
+        represent
     }
     
     def asValue fun() => values.asValue[Token](Token(name, value, source), Token, listOf(
@@ -17,10 +17,10 @@ public def Token class(name: String, value: String, source: StringSource) => {
         values.attribute[Token, String]("source", fun(token: Token) => token.source())
     ));
     
-    def toRepresentation fun() =>
+    def represent fun() =>
         "Token("
             .concat("name=").concat(name)
             .concat(",value=").concat(value)
-            .concat(",source=").concat(representation(source))
+            .concat(",source=").concat(represent(source))
             .concat(")");
 }

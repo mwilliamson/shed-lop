@@ -12,6 +12,5 @@ public def Success class[T] => (myValue: T, myRemaining: Sequence[Token]) => {
         
     public def isSuccess fun() => true;
     
-    public def toRepresentation fun() =>
-        "Success"
+    public def represent fun() => "Success"
 }
