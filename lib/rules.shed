@@ -121,14 +121,10 @@ public val rules = object {
             )
 
         def end fun() => 
-            fun(tokens: Sequence[Tokens]) => do {
-                val previousResult = previousRule(tokens);
-                return if previousResult.isSuccess() then
-                    nextRule(previousResult.remaining()).map(fun(nextValue: Any) =>
-                        func(previousResult.value(), nextValue))
-                else
-                    previousResult;
-            }
+            fun(tokens: Sequence[Tokens]) =>
+                previousRule(tokens).bindWithRemaining(fun(previousValue: Tuple[T1, T2], remaining: Sequence[Tokens]) =>
+                    nextRule(remaining).map(fun(nextValue: Any) =>
+                        func(previousValue, nextValue)))
     }
         
     val emptySequenceRule = SequenceRule(

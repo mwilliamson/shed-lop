@@ -2,6 +2,10 @@ package lop.results;
 
 public def Failure class(myError: Error) => {
     public def map fun[R] => () => Failure(myError);
+    
+    public def bindWithRemaining fun[R] => (func: Function[Nothing, Sequence[Token], ParseResult[R]]) =>
+        Failure(myError);
+        
     public def isSuccess fun() => false;
     public def error fun() => myError;
     
