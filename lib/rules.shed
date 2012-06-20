@@ -111,15 +111,39 @@ public val rules = object {
     def OneCaptureSequenceRule class(rules: Sequence[SequenceRule[Any]]) => {
         members {
             next,
+            capture,
             end
         }
 
-        def next fun(rule: Rule[T]) => OneCaptureSequenceRule(sequences.cons[Rule](rule, rules));
+        def next fun(rule: Rule[T]) =>
+            OneCaptureSequenceRule(sequences.cons(rule, rules));
+        
+        def capture fun(rule: Rule[T]) =>
+            MultipleCaptureSequenceRule(sequences.cons(Capture(rule), rules));
 
         def end fun() =>
             fun(tokens: Sequence[Tokens]) =>
                 sequenceToRuleValues(sequences.reversed[Rule](rules))(tokens)
                     .map[Nothing](fun(values: Sequence) => values.head())
+    }
+    
+    def MultipleCaptureSequenceRule class(rules: Sequence[SequenceRule[Any]]) => {
+        members {
+            next,
+            capture,
+            end
+        }
+
+        def next fun(rule: Rule[T]) =>
+            MultipleCaptureSequenceRule(sequences.cons[Rule](rule, rules));
+            
+        def capture fun(rule: Rule[T]) =>
+            MultipleCaptureSequenceRule(sequences.cons[Rule](rule, rules));
+
+        def end fun() =>
+            fun(tokens: Sequence[Tokens]) =>
+                sequenceToRuleValues(sequences.reversed[Rule](rules))(tokens)
+                    .map[Nothing](fun(values: Sequence) => tupleFromSequence(values))
     }
     
     def sequenceToRuleValues fun(rules: Sequence[SequenceRule[Any]]) =>
