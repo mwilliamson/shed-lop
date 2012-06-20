@@ -12,10 +12,14 @@ import lop.results.Failure;
 import lop.Error;
 
 val results = object {
-    public def success fun[T] => (value: T, remaining: StringSource) =>
+    members {
+        success,
+        failure
+    }
+    def success fun[T] => (value: T, remaining: StringSource) =>
         Success[T](value, remaining);
         
-    public def failure fun(expected: String, actual: String) =>
+    def failure fun(expected: String, actual: String) =>
         Failure(Error(expected, actual));
 };
 
