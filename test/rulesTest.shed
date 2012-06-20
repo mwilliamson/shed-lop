@@ -151,6 +151,20 @@ public val rulesTest = listOf[TestCase](
         )
     ),
     
+    TestCase("rules.sequence() can capture first value", fun() =>
+        assertSuccessfulParse[String](
+            rules.sequence()
+                .capture(rules.tokenOfType("identifier"))
+                .next(rules.token("symbol", ")"))
+                .end(),
+            listOf(
+                Token("identifier", "go", source("go")),
+                Token("symbol", ")", source(")"))
+            ),
+            equalTo[String](tuple("go"))
+        )
+    ),
+    
     TestCase("rules.sequence() can capture a single value", fun() =>
         assertSuccessfulParse[String](
             rules.sequence()
@@ -163,7 +177,7 @@ public val rulesTest = listOf[TestCase](
                 Token("identifier", "go", source("go")),
                 Token("symbol", ")", source(")"))
             ),
-            equalTo[String]("go")
+            equalTo[String](tuple("go"))
         )
     ),
     

@@ -29,8 +29,7 @@ public val rules = object {
         tokenOfType,
         token,
         map,
-        sequence,
-        sequences rulesSequences
+        sequence
     }
     
     // TODO: should be type Rule[T] = Fun(Sequence[Token]) => ParseResult[T]
@@ -89,98 +88,49 @@ public val rules = object {
     // type SequenceRule[T] = Rule[T] | Capture[T];
 
     def sequence fun() =>
-        NoCaptureSequenceRule(sequences.nil);
+        emptySequenceRule;
         
-    def NoCaptureSequenceRule class(rules: Sequence[SequenceRule[Any]]) => {
+    val noOpRule =
+        fun(tokens: Sequence[Tokens]) =>
+            results.success((), tokens);
+        
+    def SequenceRule class[T1, T2, Tn] => (
+        previousRule: Rule[Tuple[T1, T2]],
+        nextRule: Rule[Tn],
+        func: Function[Tuple[T1, T2], Tn, R]
+    ) => {
         members {
             next,
             capture,
             end
         }
 
-        def next fun(rule: Rule[T]) => NoCaptureSequenceRule(sequences.cons[Rule](rule, rules));
+        def next fun(rule: Rule[Any]) =>
+            SequenceRule(
+                end(),
+                rule,
+                fun(previousValues: Tuple[T1, T2, Tn], _: Any) => previousValues
+            );
         
-        def capture fun(rule: Rule[T]) => OneCaptureSequenceRule(sequences.cons[Rule](Capture(rule), rules));
+        def capture fun[U] => (rule: Rule[U]) =>
+            SequenceRule(
+                end(),
+                rule,
+                fun(previousValues: Tuple[T1, T2, Tn], nextValue: U) =>
+                    previousValues.append(nextValue)
+            )
 
         def end fun() => 
-            fun(tokens: Sequence[Tokens]) =>
-                sequenceToRuleValues(sequences.reversed[Rule](rules))(tokens)
-                    .map[Unit](fun() => ())
-    }
-    
-    def OneCaptureSequenceRule class(rules: Sequence[SequenceRule[Any]]) => {
-        members {
-            next,
-            capture,
-            end
-        }
-
-        def next fun(rule: Rule[T]) =>
-            OneCaptureSequenceRule(sequences.cons(rule, rules));
-        
-        def capture fun(rule: Rule[T]) =>
-            MultipleCaptureSequenceRule(sequences.cons(Capture(rule), rules));
-
-        def end fun() =>
-            fun(tokens: Sequence[Tokens]) =>
-                sequenceToRuleValues(sequences.reversed[Rule](rules))(tokens)
-                    .map[Nothing](fun(values: Sequence) => values.head())
-    }
-    
-    def MultipleCaptureSequenceRule class(rules: Sequence[SequenceRule[Any]]) => {
-        members {
-            next,
-            capture,
-            end
-        }
-
-        def next fun(rule: Rule[T]) =>
-            MultipleCaptureSequenceRule(sequences.cons[Rule](rule, rules));
-            
-        def capture fun(rule: Rule[T]) =>
-            MultipleCaptureSequenceRule(sequences.cons[Rule](rule, rules));
-
-        def end fun() =>
-            fun(tokens: Sequence[Tokens]) =>
-                sequenceToRuleValues(sequences.reversed[Rule](rules))(tokens)
-                    .map[Nothing](fun(values: Sequence) => tupleFromSequence(values))
-    }
-    
-    def sequenceToRuleValues fun(rules: Sequence[SequenceRule[Any]]) =>
-        fun(tokens: Sequence[Token]) =>
-            sequences.head[Rule](rules).map[ParseResult](fun(rule: Rule) => do {
-                val result = applySequenceRule(rule, tokens);
-                return if result.isSuccess() then
-                    sequenceToRuleValues(rules.tail())(result.remaining())
-                        .map[Nothing](fun(values: Sequence) =>
-                            match(rule,
-                                matchClass(Capture, fun() => sequences.cons[Unit](result.value(), values)),
-                                matchDefault(fun() => values)
-                            )
-                            
-                        )
+            fun(tokens: Sequence[Tokens]) => do {
+                val previousResult = previousRule(tokens);
+                return if previousResult.isSuccess() then
+                    nextRule(previousResult.remaining()).map(fun(nextValue: Any) =>
+                        func(previousResult.value(), nextValue))
                 else
-                    result;
-            })
-            .valueOrElse[ParseResult](fun() => results.success[Unit](sequences.nil, tokens))
-    
-    def applySequenceRule fun(rule: SequenceRule[T], tokens: Sequence[Token]) =>
-        match(rule,
-            matchClass(Capture, fun(capture: Capture[T]) => capture.apply(tokens)),
-            matchDefault(fun() => rule(tokens))
-        );
-    
-    val rulesSequences = object {
-        members {
-            capture
-        }
-        
-        def capture fun[T] => (rule: Rule[T]) => Capture(rule);
-    };
-        
-    def Capture class(rule: Rule) => {
-        members {
-            apply rule
-        }
+                    previousResult;
+            }
     }
+        
+    val emptySequenceRule = SequenceRule(
+        noOpRule, noOpRule, fun(_: Any, _: Any) => tuple());
 };
