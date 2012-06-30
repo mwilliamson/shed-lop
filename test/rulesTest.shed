@@ -166,6 +166,22 @@ public val rulesTest = listOf[TestCase](
     ),
     
     TestCase("rules.sequence() can capture a single value", fun() =>
+        assertSuccessfulParse(
+            rules.sequence()
+                .next(rules.token("symbol", "("))
+                .capture(rules.tokenOfType("identifier"))
+                .next(rules.token("symbol", ")"))
+                .head(),
+            listOf(
+                Token("symbol", "(", source("(")),
+                Token("identifier", "go", source("go")),
+                Token("symbol", ")", source(")"))
+            ),
+            equalTo("go")
+        )
+    ),
+    
+    TestCase("rules.sequence() can capture a single value as a tuple", fun() =>
         assertSuccessfulParse[String](
             rules.sequence()
                 .next(rules.token("symbol", "("))

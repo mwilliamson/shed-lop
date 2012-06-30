@@ -106,7 +106,8 @@ public val rules = object {
             next,
             capture,
             tuple,
-            map
+            map,
+            head
         }
 
         def next fun(rule: Rule[Any]) =>
@@ -132,6 +133,9 @@ public val rules = object {
                         
         def map fun[U] => (func: Function[R1, R2, Rn, U]) =>
             rules.map(tuple(), pack(func))
+            
+        def head fun() =>
+            rules.map(tuple(), tuples.head)
     }
         
     val emptySequenceRule = SequenceRule(
