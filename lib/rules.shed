@@ -100,12 +100,13 @@ public val rules = object {
     def SequenceRule class[T1, T2, Tn] => (
         previousRule: Rule[Tuple[T1, T2]],
         nextRule: Rule[Tn],
-        func: Function[Tuple[T1, T2], Tn, R]
+        func: Function[Tuple[T1, T2], Tn, Tuple[R1, R2, Rn]]
     ) => {
         members {
             next,
             capture,
-            tuple
+            tuple,
+            map
         }
 
         def next fun(rule: Rule[Any]) =>
@@ -126,8 +127,11 @@ public val rules = object {
         def tuple fun() => 
             fun(tokens: Sequence[Tokens]) =>
                 previousRule(tokens).bindWithRemaining(fun(previousValue: Tuple[T1, T2], remaining: Sequence[Tokens]) =>
-                    nextRule(remaining).map(fun(nextValue: Any) =>
+                    nextRule(remaining).map(fun(nextValue: Tn) =>
                         func(previousValue, nextValue)))
+                        
+        def map fun[U] => (func: Function[R1, R2, Rn, U]) =>
+            rules.map(tuple(), pack(func))
     }
         
     val emptySequenceRule = SequenceRule(

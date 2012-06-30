@@ -201,6 +201,26 @@ public val rulesTest = listOf[TestCase](
         )
     ),
     
+    TestCase("rules.sequence() can map tuple", fun() =>
+        assertSuccessfulParse[String](
+            rules.sequence()
+                .next(rules.token("symbol", "("))
+                .capture(rules.tokenOfType("identifier"))
+                .next(rules.token("symbol", ","))
+                .capture(rules.tokenOfType("identifier"))
+                .next(rules.token("symbol", ")"))
+                .map(fun(first: String, second: String) => first.concat(" ").concat(second)),
+            listOf(
+                Token("symbol", "(", source("(")),
+                Token("identifier", "go", source("go")),
+                Token("symbol", ",", source(",")),
+                Token("identifier", "away", source("away")),
+                Token("symbol", ")", source(")"))
+            ),
+            equalTo("go away")
+        )
+    ),
+    
     TestCase("zeroOrMoreWithSeparator can match no values", fun() =>
         assertSuccessfulParse(
             rules.zeroOrMoreWithSeparator(rules.tokenOfType("identifier"), rules.token("symbol", ",")),
