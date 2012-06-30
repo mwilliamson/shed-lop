@@ -105,25 +105,25 @@ public val rules = object {
         members {
             next,
             capture,
-            end
+            tuple
         }
 
         def next fun(rule: Rule[Any]) =>
             SequenceRule(
-                end(),
+                tuple(),
                 rule,
                 fun(previousValues: Tuple[T1, T2, Tn], _: Any) => previousValues
             );
         
         def capture fun[U] => (rule: Rule[U]) =>
             SequenceRule(
-                end(),
+                tuple(),
                 rule,
                 fun(previousValues: Tuple[T1, T2, Tn], nextValue: U) =>
                     previousValues.append(nextValue)
             )
 
-        def end fun() => 
+        def tuple fun() => 
             fun(tokens: Sequence[Tokens]) =>
                 previousRule(tokens).bindWithRemaining(fun(previousValue: Tuple[T1, T2], remaining: Sequence[Tokens]) =>
                     nextRule(remaining).map(fun(nextValue: Any) =>
@@ -141,7 +141,7 @@ public val rules = object {
             val result = rule(tokens);
             return if result.isSuccess() then do {
                 val separatorAndRule = map(
-                    sequence().next(separator).capture(rule).end(),
+                    sequence().next(separator).capture(rule).tuple(),
                     tuples.head
                 );
                 val remainingRule = zeroOrMore(separatorAndRule);

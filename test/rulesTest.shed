@@ -129,7 +129,7 @@ public val rulesTest = listOf[TestCase](
                 .next(rules.token("keyword", "if"))
                 .next(rules.tokenOfType("identifier"))
                 .next(rules.token("keyword", "then"))
-                .end(),
+                .tuple(),
             listOf(Token("keyword", "if", source("if")), Token("keyword", "then", source("then"))),
             Error("identifier", "keyword \"then\"")
         )
@@ -141,7 +141,7 @@ public val rulesTest = listOf[TestCase](
                 .next(rules.token("keyword", "if"))
                 .next(rules.tokenOfType("identifier"))
                 .next(rules.token("keyword", "then"))
-                .end(),
+                .tuple(),
             listOf(
                 Token("keyword", "if", source("if")),
                 Token("identifier", "go", source("go")),
@@ -156,7 +156,7 @@ public val rulesTest = listOf[TestCase](
             rules.sequence()
                 .capture(rules.tokenOfType("identifier"))
                 .next(rules.token("symbol", ")"))
-                .end(),
+                .tuple(),
             listOf(
                 Token("identifier", "go", source("go")),
                 Token("symbol", ")", source(")"))
@@ -171,7 +171,7 @@ public val rulesTest = listOf[TestCase](
                 .next(rules.token("symbol", "("))
                 .capture(rules.tokenOfType("identifier"))
                 .next(rules.token("symbol", ")"))
-                .end(),
+                .tuple(),
             listOf(
                 Token("symbol", "(", source("(")),
                 Token("identifier", "go", source("go")),
@@ -189,7 +189,7 @@ public val rulesTest = listOf[TestCase](
                 .next(rules.token("symbol", ","))
                 .capture(rules.tokenOfType("identifier"))
                 .next(rules.token("symbol", ")"))
-                .end(),
+                .tuple(),
             listOf(
                 Token("symbol", "(", source("(")),
                 Token("identifier", "go", source("go")),
@@ -236,7 +236,7 @@ public val rulesTest = listOf[TestCase](
             rules.sequence()
                 .next(rules.zeroOrMoreWithSeparator(rules.tokenOfType("identifier"), rules.token("symbol", ",")))
                 .next(rules.token("symbol", ","))
-                .end(),
+                .tuple(),
             listOf(
                 Token("identifier", "go", source("go")),
                 Token("symbol", ",", source(","))
