@@ -29,7 +29,8 @@ public val rules = object {
         tokenOfType,
         token,
         map,
-        sequence
+        sequence,
+        zeroOrMoreWithSeparator
     }
     
     // TODO: should be type Rule[T] = Fun(Sequence[Token]) => ParseResult[T]
@@ -129,4 +130,13 @@ public val rules = object {
         
     val emptySequenceRule = SequenceRule(
         noOpRule, noOpRule, fun(_: Any, _: Any) => tuple());
+        
+    def zeroOrMoreWithSeparator fun[T] => (rule: Rule[T], separator: Rule[Any]) =>
+        fun(tokens: Sequence[Tokens]) => do {
+            val result = rule(tokens);
+            return if result.isSuccess() then
+                result.map(listOf)
+            else
+                results.success(emptyList, tokens);
+        }
 };

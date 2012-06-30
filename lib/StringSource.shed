@@ -1,5 +1,7 @@
 package lop;
 
+import structs;
+
 import lop.Range;
 
 public def StringSource class(string: String, myDescription: String, myRange: Range) => {
@@ -14,18 +16,8 @@ public def StringSource class(string: String, myDescription: String, myRange: Ra
             Range(myRange.start().add(rangeStart), myRange.start().add(rangeEnd))
         );
     
-    public def equals fun(other: StringSource) => and(
-        asString().equals(other.asString()),
-        description().equals(other.description()),
-        indexRange().equals(other.indexRange())
-    );
-    
     public def sliceFrom fun(index: Double) =>
         StringSource(string, description(), Range(myRange.start().add(index), myRange.end()));
     
-    public def represent fun() =>
-        "StringSource("
-            .concat("string=").concat(asString())
-            .concat("range=").concat(represent(myRange))
-            .concat(")");
+    public def struct fun() => structs.create(StringSource, listOf(string, myDescription, myRange))
 };

@@ -1,26 +1,12 @@
 package lop;
 
-import values;
+import structs;
 
 public def Token class(name: String, value: String, source: StringSource) => {
     members {
         name fun() => name,
         value fun() => value,
         source fun() => source,
-        equals fun(other: Token) => asValue().equals(other),
-        represent
+        struct fun() => structs.create(Token, listOf(name, value, source))
     }
-    
-    def asValue fun() => values.asValue[Token](Token(name, value, source), Token, listOf(
-        values.attribute[Token, String]("name", fun(token: Token) => token.name()),
-        values.attribute[Token, String]("value", fun(token: Token) => token.value()),
-        values.attribute[Token, String]("source", fun(token: Token) => token.source())
-    ));
-    
-    def represent fun() =>
-        "Token("
-            .concat("name=").concat(name)
-            .concat(",value=").concat(value)
-            .concat(",source=").concat(represent(source))
-            .concat(")");
 }
