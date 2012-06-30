@@ -217,19 +217,19 @@ public val rulesTest = listOf[TestCase](
             ),
             equalTo(listOf("go"))
         )
-    )
+    ),
     
-    //TestCase("zeroOrMoreWithSeparator can match multiple values", fun() =>
-    //    assertSuccessfulParse(
-    //        rules.zeroOrMoreWithSeparator(rules.tokenOfType("identifier"), rules.symbol(",")),
-    //        listOf(
-    //            Token("identifier", "go", source("go")),
-    //            Token("symbol", ",", source(",")),
-    //            Token("identifier", "away", source("away"))
-    //        ),
-    //        equalTo(tuple("go", "away"))
-    //    )
-    //)
+    TestCase("zeroOrMoreWithSeparator can match multiple values", fun() =>
+        assertSuccessfulParse(
+            rules.zeroOrMoreWithSeparator(rules.tokenOfType("identifier"), rules.token("symbol", ",")),
+            listOf(
+                Token("identifier", "go", source("go")),
+                Token("symbol", ",", source(",")),
+                Token("identifier", "away", source("away"))
+            ),
+            equalTo(listOf("go", "away"))
+        )
+    )
 );
 
 def failingRule fun(tokens: Sequence[Token]) =>

@@ -4,6 +4,7 @@ import lazySequenceables;
 import sequenceables;
 import lazySequences;
 import sequences;
+import lists;
 
 import lop.Token;
 import lop.results.ParseResult;
@@ -132,11 +133,19 @@ public val rules = object {
         noOpRule, noOpRule, fun(_: Any, _: Any) => tuple());
         
     def zeroOrMoreWithSeparator fun[T] => (rule: Rule[T], separator: Rule[Any]) =>
+        map(zeroOrMoreWithSeparator2(rule, separator), lists.sequenceToList)
+        
+    def zeroOrMoreWithSeparator2 fun[T] => (rule: Rule[T], separator: Rule[Any]) =>
         fun(tokens: Sequence[Tokens]) => do {
             val result = rule(tokens);
-            return if result.isSuccess() then
-                result.map(listOf)
-            else
-                results.success(emptyList, tokens);
+            return if result.isSuccess() then do {
+                val separatorResult = separator(result.remaining());
+                return if separatorResult.isSuccess() then
+                    zeroOrMoreWithSeparator2(rule, separator)(separatorResult.remaining())
+                        .map(fun(values: Sequence[T]) => sequences.cons(result.value(), values))
+                else
+                    result.map(sequences.singleton);
+            } else
+                results.success(sequences.nil, tokens);
         }
 };
