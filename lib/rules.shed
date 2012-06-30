@@ -5,6 +5,7 @@ import sequenceables;
 import lazySequences;
 import sequences;
 import lists;
+import tuples;
 
 import lop.Token;
 import lop.results.ParseResult;
@@ -136,13 +137,28 @@ public val rules = object {
         map(zeroOrMoreWithSeparator2(rule, separator), lists.sequenceToList)
         
     def zeroOrMoreWithSeparator2 fun[T] => (rule: Rule[T], separator: Rule[Any]) =>
-        fun(tokens: Sequence[Tokens]) => do {
+        fun(tokens: Sequence[Token]) => do {
             val result = rule(tokens);
             return if result.isSuccess() then do {
-                val separatorResult = separator(result.remaining());
-                return if separatorResult.isSuccess() then
-                    zeroOrMoreWithSeparator2(rule, separator)(separatorResult.remaining())
-                        .map(fun(values: Sequence[T]) => sequences.cons(result.value(), values))
+                val separatorAndRule = map(
+                    sequence().next(separator).capture(rule).end(),
+                    tuples.head
+                );
+                val remainingRule = zeroOrMore(separatorAndRule);
+                val remainingResult = remainingRule(result.remaining());
+                // zeroOrMore always returns success, and therefore always has a value
+                return results.success(sequences.cons(result.value(), remainingResult.value()), remainingResult.remaining());
+            } else
+                results.success(sequences.nil, tokens);
+        }
+        
+    def zeroOrMore fun[T] => (rule: Rule[T]) =>
+        fun(tokens: Sequence[Token]) => do {
+            val result = rule(tokens);
+            return if result.isSuccess() then do {
+                val remainingResult = zeroOrMore(rule)(result.remaining());
+                return if remainingResult.isSuccess() then
+                    results.success(sequences.cons(result.value(), remainingResult.value()), remainingResult.remaining())
                 else
                     result.map(sequences.singleton);
             } else

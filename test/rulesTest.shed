@@ -229,6 +229,20 @@ public val rulesTest = listOf[TestCase](
             ),
             equalTo(listOf("go", "away"))
         )
+    ),
+    
+    TestCase("zeroOrMoreWithSeparator does not consume final separator", fun() =>
+        assertSuccessfulParse(
+            rules.sequence()
+                .next(rules.zeroOrMoreWithSeparator(rules.tokenOfType("identifier"), rules.token("symbol", ",")))
+                .next(rules.token("symbol", ","))
+                .end(),
+            listOf(
+                Token("identifier", "go", source("go")),
+                Token("symbol", ",", source(","))
+            ),
+            equalTo(tuple())
+        )
     )
 );
 
