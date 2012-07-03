@@ -57,6 +57,44 @@ public val prattTest = listOf(
             ),
             equalTo(tuple("print", "name"))
         );
+    }),
+    
+    TestCase("can parse expression with two left associative operators", fun() => do {
+        def partialAddRule fun(tokens: Sequence[Token]) =>
+            rules.sequence()
+                .next(rules.token("symbol", "+"))
+                .capture(expressionParser.leftAssociative("add"))
+                .map(fun(arg: ExpressionNode) => fun(callee: ExpressionNode) => tuple("+", callee, arg))
+                (tokens);
+                
+        def partialMultiplyRule fun(tokens: Sequence[Token]) =>
+            rules.sequence()
+                .next(rules.token("symbol", "*"))
+                .capture(expressionParser.leftAssociative("multiply"))
+                .map(fun(arg: ExpressionNode) => fun(callee: ExpressionNode) => tuple("*", callee, arg))
+                (tokens);
+                
+        val expressionParser = pratt.parser(
+            listOf(rules.tokenOfType("number")),
+            listOf(
+                pratt.infix("multiply", partialMultiplyRule),
+                pratt.infix("add", partialAddRule)
+            )
+        );
+        
+        return assertSuccessfulParse(
+            expressionParser.rule(),
+            listOf(
+                Token("number", "1"),
+                Token("symbol", "*"),
+                Token("number", "2"),
+                Token("symbol", "+"),
+                Token("number", "3"),
+                Token("symbol", "*"),
+                Token("number", "4")
+            ),
+            equalTo(tuple("+", tuple("*", "1", "2"), tuple("*", "3", "4")))
+        );
     })
 );
 
