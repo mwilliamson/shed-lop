@@ -37,7 +37,6 @@ public val pratt = object {
                 else
                     prefixResult;
             }
-                
             
         def applyInfixRules fun(applicableInfixRules: Sequence[InfixRule[T]]) =>
             fun(leftResult: ParseResult[T]) => do {
@@ -46,9 +45,9 @@ public val pratt = object {
                 val infixResults = lazySequences.map(applyInfixRule, applicableInfixRules);
                 val successfulInfixResults = lazySequences.filter(fun(result: ParseResult[T]) => result.isSuccess(), infixResults);
                 return sequences.head(successfulInfixResults)
-                    .map(fun(infixResult: ParseResult[T]) => do {
-                        return infixResult.map(fun(infix: Any) => infix(leftResult.value()));
-                    })
+                    .map(fun(infixResult: ParseResult[T]) =>
+                        infixResult.map(fun(infix: Any) => infix(leftResult.value()))
+                    )
                     .map(fun(result: ParseResult[T]) => applyInfixRules(applicableInfixRules)(result))
                     .valueOrElse(fun() => leftResult);
             };
