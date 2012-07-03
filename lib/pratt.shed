@@ -14,13 +14,17 @@ public val pratt = object {
     def Parser class[T] => (prefixRules: List[Rule[T]], infixRules: List[Any]) => {
         members {
             leftAssociative,
+            rightAssociative,
             rule
         }
         
         val prefixRule = rules.firstOf("pratt", prefixRules);
         
         def leftAssociative fun(name: String) =>
-            applyRules(infixRulesUntil(name))
+            applyRules(infixRulesUntilExclusive(name))
+            
+        def rightAssociative fun(name: String) =>
+            applyRules(infixRulesUntilInclusive(name))
         
         def rule fun() =>
             applyRules(infixRules.toSequence())
@@ -50,14 +54,20 @@ public val pratt = object {
             };
                 
             
-        def infixRulesUntil fun(name: String) =>
-            remainingInfixRulesUntil(name, infixRules.toSequence())
+        def infixRulesUntilInclusive fun(name: String) =>
+            remainingInfixRulesUntil(name, infixRules.toSequence(), true)
+            
+        def infixRulesUntilExclusive fun(name: String) =>
+            remainingInfixRulesUntil(name, infixRules.toSequence(), false)
         
-        def remainingInfixRulesUntil fun(name: String, remainingRules: Sequence[InfixRule[T]]) =>
+        def remainingInfixRulesUntil fun(name: String, remainingRules: Sequence[InfixRule[T]], inclusive: Boolean) =>
             sequences.head(remainingRules)
                 .map(fun(rule: InfixRule[T]) =>
                     if equal(rule.name(), name) then
-                        sequences.nil
+                        if inclusive then
+                            sequences.singleton(rule)
+                        else
+                            sequences.nil
                     else
                         sequences.cons(rule, remainingInfixRulesUntil(name, remainingRules.tail()))
                 )

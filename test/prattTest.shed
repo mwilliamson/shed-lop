@@ -97,6 +97,46 @@ public val prattTest = listOf(
             ),
             equalTo(tuple("+", tuple("*", tuple("*", "1", "2"), "3"), tuple("*", "4", "5")))
         );
+    }),
+    
+    TestCase("can parse expression with right associative operators", fun() => do {
+        def partialAddRule fun(tokens: Sequence[Token]) =>
+            rules.sequence()
+                .next(rules.token("symbol", "+"))
+                .capture(expressionParser.leftAssociative("add"))
+                .map(fun(arg: ExpressionNode) => fun(callee: ExpressionNode) => tuple("+", callee, arg))
+                (tokens);
+                
+        def partialPowerRule fun(tokens: Sequence[Token]) =>
+            rules.sequence()
+                .next(rules.token("symbol", "^"))
+                .capture(expressionParser.rightAssociative("power"))
+                .map(fun(arg: ExpressionNode) => fun(callee: ExpressionNode) => tuple("^", callee, arg))
+                (tokens);
+                
+        val expressionParser = pratt.parser(
+            listOf(rules.tokenOfType("number")),
+            listOf(
+                pratt.infix("power", partialPowerRule),
+                pratt.infix("add", partialAddRule)
+            )
+        );
+        
+        return assertSuccessfulParse(
+            expressionParser.rule(),
+            listOf(
+                Token("number", "1"),
+                Token("symbol", "^"),
+                Token("number", "2"),
+                Token("symbol", "^"),
+                Token("number", "3"),
+                Token("symbol", "+"),
+                Token("number", "4"),
+                Token("symbol", "^"),
+                Token("number", "5")
+            ),
+            equalTo(tuple("+", tuple("^", "1", tuple("^", "2", "3")), tuple("^", "4", "5")))
+        );
     })
 );
 
