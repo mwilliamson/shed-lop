@@ -88,12 +88,14 @@ public val prattTest = listOf(
                 Token("number", "1"),
                 Token("symbol", "*"),
                 Token("number", "2"),
-                Token("symbol", "+"),
-                Token("number", "3"),
                 Token("symbol", "*"),
-                Token("number", "4")
+                Token("number", "3"),
+                Token("symbol", "+"),
+                Token("number", "4"),
+                Token("symbol", "*"),
+                Token("number", "5")
             ),
-            equalTo(tuple("+", tuple("*", "1", "2"), tuple("*", "3", "4")))
+            equalTo(tuple("+", tuple("*", tuple("*", "1", "2"), "3"), tuple("*", "4", "5")))
         );
     })
 );
