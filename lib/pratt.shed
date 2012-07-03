@@ -1,0 +1,42 @@
+package lop;
+
+import lazySequenceables;
+import sequenceables;
+
+import lop.rules;
+
+public val pratt = object {
+    members {
+        parser Parser,
+        infix InfixRule
+    }
+        
+    def Parser class[T] => (prefixRules: List[Rule[T]], infixRules: List[Any]) => {
+        members {
+            rule
+        }
+        
+        val prefixRule = rules.firstOf("pratt", prefixRules);
+        
+        def rule fun() =>
+            fun(tokens: Sequence[Token]) => do {
+                val prefixResult = prefixRule(tokens);
+                return prefixResult.bindWithRemaining(fun(left: T, remaining: Sequence[Token]) => do {
+                    val applyInfixRule = fun(infixRule: InfixRule[T]) => infixRule.apply(remaining);
+                    val infixResults = lazySequenceables.map(applyInfixRule, infixRules);
+                    val successfulInfixResults = lazySequenceables.filter(fun(result: ParseResult[T]) => result.isSuccess(), infixResults);
+                    return sequenceables.head(successfulInfixResults)
+                        .map(fun(infixResult: ParseResult[T]) => do {
+                            return infixResult.map(fun(infix: Any) => infix(left));
+                        })
+                        .valueOrElse(fun() => prefixResult);
+                });
+            }
+    }
+    
+    def InfixRule class[T] => (name: String, rule: Rule[T]) => {
+        members {
+            apply rule
+        }
+    }
+};

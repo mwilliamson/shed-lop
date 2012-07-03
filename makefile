@@ -6,3 +6,4 @@ build-tests:
 
 test: build-tests
 	node _build/tests.js lop.rulesTest
+	node _build/tests.js lop.prattTest

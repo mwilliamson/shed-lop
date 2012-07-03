@@ -1,0 +1,84 @@
+package lop;
+
+import sequences;
+import strings;
+import lazySequences;
+
+import hat.TestCase;
+import duck.assertThat;
+import duck.isList;
+import duck.equalTo;
+import duck.anything;
+import duck.MatchResult;
+
+import lop.pratt;
+import lop.rules;
+import lop.Token;
+
+import lop.testing.isSuccess;
+
+def source fun(value: String) => createStringSource(value, "raw string");
+
+public val prattTest = listOf(
+    TestCase("can parse prefix expression", fun() =>
+        assertSuccessfulParse(
+            pratt.parser(
+                listOf(rules.tokenOfType("identifier")),
+                emptyList
+            ).rule(),
+            listOf(Token("identifier", "blah")),
+            equalTo("blah")
+        )
+    ),
+    
+    TestCase("can parse simple infix expression", fun() => do {
+        def partialCallRule fun(tokens: Sequence[Token]) =>
+            rules.sequence()
+                .next(rules.token("symbol", "("))
+                .capture(expressionParser.rule())
+                .next(rules.token("symbol", ")"))
+                .map(fun(arg: ExpressionNode) => fun(callee: ExpressionNode) => tuple(callee, arg))
+                (tokens);
+                
+        val expressionParser = pratt.parser(
+            listOf(rules.tokenOfType("identifier")),
+            listOf(
+                pratt.infix("call", partialCallRule)
+            )
+        );
+        
+        return assertSuccessfulParse(
+            expressionParser.rule(),
+            listOf(
+                Token("identifier", "print"),
+                Token("symbol", "("),
+                Token("identifier", "name"),
+                Token("symbol", ")")
+            ),
+            equalTo(tuple("print", "name"))
+        );
+    })
+);
+
+def failingRule fun(tokens: Sequence[Token]) =>
+    Failure(Error("<expected>", "<actual>"));
+
+def stringSource fun(string: String) =>
+    createStringSource(string, "raw string");
+
+def assertFailedParse fun[T] => (rule: Rule[T], input: List[Token]) => do {
+    return assertParse[T](rule, input, isFailure);
+};
+
+def assertFailedParseWithError fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do {
+    return assertParse[T](rule, input, isFailureWithError(error));
+};
+
+def assertSuccessfulParse fun[T] => (rule: Rule[T], input: List[Token], value: T) => do {
+    return assertParse[T](rule, input, isSuccess[T](value));
+};
+
+def assertParse fun[T] => (rule: Rule[T], input: List[Token], matcher: Matcher) => do {
+    val result = rule(input.toSequence());
+    return assertThat[T](result, matcher);
+};
