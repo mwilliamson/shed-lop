@@ -11,14 +11,14 @@ public val pratt = object {
         infix InfixRule
     }
         
-    def Parser class[T] => (prefixRules: List[Rule[T]], infixRules: List[Any]) => {
+    def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: List[Any]) => {
         members {
             leftAssociative,
             rightAssociative,
             rule
         }
         
-        val prefixRule = rules.firstOf("pratt", prefixRules);
+        val prefixRule = rules.firstOf(name, prefixRules);
         
         def leftAssociative fun(name: String) =>
             applyRules(infixRulesUntilExclusive(name))

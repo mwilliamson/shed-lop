@@ -22,7 +22,7 @@ def source fun(value: String) => createStringSource(value, "raw string");
 public val prattTest = listOf(
     TestCase("can parse prefix expression", fun() =>
         assertSuccessfulParse(
-            pratt.parser(
+            pratt.parser("expression",
                 listOf(rules.tokenOfType("identifier")),
                 emptyList
             ).rule(),
@@ -40,7 +40,7 @@ public val prattTest = listOf(
                 .map(fun(arg: ExpressionNode) => fun(callee: ExpressionNode) => tuple(callee, arg))
                 (tokens);
                 
-        val expressionParser = pratt.parser(
+        val expressionParser = pratt.parser("expression",
             listOf(rules.tokenOfType("identifier")),
             listOf(
                 pratt.infix("call", partialCallRule)
@@ -74,7 +74,7 @@ public val prattTest = listOf(
                 .map(fun(arg: ExpressionNode) => fun(callee: ExpressionNode) => tuple("*", callee, arg))
                 (tokens);
                 
-        val expressionParser = pratt.parser(
+        val expressionParser = pratt.parser("expression",
             listOf(rules.tokenOfType("number")),
             listOf(
                 pratt.infix("multiply", partialMultiplyRule),
@@ -114,7 +114,7 @@ public val prattTest = listOf(
                 .map(fun(arg: ExpressionNode) => fun(callee: ExpressionNode) => tuple("^", callee, arg))
                 (tokens);
                 
-        val expressionParser = pratt.parser(
+        val expressionParser = pratt.parser("expression",
             listOf(rules.tokenOfType("number")),
             listOf(
                 pratt.infix("power", partialPowerRule),
