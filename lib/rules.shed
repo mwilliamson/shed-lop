@@ -32,6 +32,7 @@ public val rules = object {
         token,
         map,
         sequence,
+        zeroOrMore,
         zeroOrMoreWithSeparator
     }
     
@@ -165,7 +166,7 @@ public val rules = object {
                     sequence().next(separator).capture(rule).tuple(),
                     tuples.head
                 );
-                val remainingRule = zeroOrMore(separatorAndRule);
+                val remainingRule = zeroOrMore2(separatorAndRule);
                 val remainingResult = remainingRule(result.remaining());
                 
                 return remainingResult.map(fun(remainingValues: Sequence[T]) =>
@@ -176,10 +177,13 @@ public val rules = object {
         }
         
     def zeroOrMore fun[T] => (rule: Rule[T]) =>
+        map(zeroOrMore2(rule), lists.sequenceToList)
+        
+    def zeroOrMore2 fun[T] => (rule: Rule[T]) =>
         fun(tokens: Sequence[Token]) => do {
             val result = rule(tokens);
             return if result.isSuccess() then do {
-                val remainingResult = zeroOrMore(rule)(result.remaining());
+                val remainingResult = zeroOrMore2(rule)(result.remaining());
                 return if remainingResult.isSuccess() then
                     results.success(sequences.cons(result.value(), remainingResult.value()), remainingResult.remaining())
                 else

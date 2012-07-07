@@ -274,6 +274,26 @@ public val rulesTest = listOf[TestCase](
         )
     ),
     
+    TestCase("zeroOrMore can match no values", fun() =>
+        assertSuccessfulParse(
+            rules.zeroOrMore(rules.tokenOfType("identifier")),
+            emptyList,
+            equalTo(emptyList)
+        )
+    ),
+    
+    TestCase("zeroOrMore can match multiple values", fun() =>
+        assertSuccessfulParse(
+            rules.zeroOrMore(rules.tokenOfType("identifier")),
+            listOf(
+                Token("identifier", "one", source("one")),
+                Token("identifier", "two", source("two")),
+                Token("identifier", "three", source("three"))
+            ),
+            equalTo(listOf("one", "two", "three"))
+        )
+    ),
+    
     TestCase("zeroOrMoreWithSeparator can match no values", fun() =>
         assertSuccessfulParse(
             rules.zeroOrMoreWithSeparator(rules.tokenOfType("identifier"), rules.token("symbol", ",")),
