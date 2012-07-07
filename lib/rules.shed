@@ -114,23 +114,20 @@ public val rules = object {
         }
 
         def next fun(rule: Rule[Any]) =>
-            SequenceRule(
-                tuple(),
+            append(
                 rule,
-                fun(previousValues: Tuple[T1, T2, Tn], _: Any) => previousValues,
-                nextCut,
-                nextCut
+                fun(previousValues: Tuple[T1, T2, Tn], _: Any) => previousValues
             );
         
         def capture fun[U] => (rule: Rule[U]) =>
-            SequenceRule(
-                tuple(),
+            append(
                 rule,
                 fun(previousValues: Tuple[T1, T2, Tn], nextValue: U) =>
-                    previousValues.append(nextValue),
-                nextCut,
-                nextCut
+                    previousValues.append(nextValue)
             )
+            
+        def append fun[U] => (rule: Rule[U], func: Function[Tuple[T1, T2, Tn], U]) =>
+            SequenceRule(tuple(), rule, func, nextCut, nextCut);
             
         def cut fun() =>
             SequenceRule(previousRule, nextRule, func, hasCut, true)
