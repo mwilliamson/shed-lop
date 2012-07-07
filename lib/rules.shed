@@ -44,11 +44,11 @@ public val rules = object {
                 fun(rule: Rule) => rule(tokens),
                 rules
             );
-            val successes = lazySequenceables.filter[ParseResult](
-                fun(result: ParseResult) => result.isSuccess(),
+            val stops = lazySequenceables.filter(
+                fun(result: ParseResult) => or(result.isSuccess(), result.isFatal()),
                 ruleResults
             );
-            return sequenceables.head[ParseResult](successes)
+            return sequenceables.head(stops)
                 .valueOrElse[ParseResult](fun() => withNextToken(tokens, fun(token: Token) =>
                     results.failure(name, describeToken(token))
                 ));

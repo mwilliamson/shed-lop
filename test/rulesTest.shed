@@ -105,6 +105,18 @@ public val rulesTest = listOf[TestCase](
         )
     ),
     
+    TestCase("rules.firstOf fatally fails if subrule fails even if following rule is success", fun() =>
+        assertErrorParseWithError(
+            rules.firstOf("literal", listOf(
+                fatalRule,
+                rules.token("keyword", "false"),
+                rules.token("keyword", "unit")
+            )),
+            listOf(Token("keyword", "false", source("false"))),
+            Error("<expected>", "<actual>")
+        )
+    ),
+    
     TestCase("rules.map does nothing to failures", fun() =>
         assertFailedParseWithError[String](
             rules.map[Unit, Unit](failingRule),
@@ -308,7 +320,10 @@ public val rulesTest = listOf[TestCase](
 );
 
 def failingRule fun(tokens: Sequence[Token]) =>
-    Failure(Error("<expected>", "<actual>"));
+    Failure(Error("<expected>", "<actual>"), false);
+
+def fatalRule fun(tokens: Sequence[Token]) =>
+    Failure(Error("<expected>", "<actual>"), true);
 
 def stringSource fun(string: String) =>
     createStringSource(string, "raw string");
