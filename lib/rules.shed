@@ -133,9 +133,8 @@ public val rules = object {
             SequenceRule(previousRule, nextRule, func, hasCut, true)
 
         def tuple fun() =>
-            fun(tokens: Sequence[Tokens]) => do {
-                val previousResult = previousRule(tokens);
-                return previousResult.bindWithRemaining(fun(previousValue: Tuple[T1, T2], remaining: Sequence[Tokens]) => do {
+            fun(tokens: Sequence[Tokens]) =>
+                previousRule(tokens).bindWithRemaining(fun(previousValue: Tuple[T1, T2], remaining: Sequence[Tokens]) => do {
                     val nextResult = nextRule(remaining);
                     return if and(nextResult.isFailure(), hasCut) then
                         Failure(nextResult.error(), true)
@@ -144,7 +143,6 @@ public val rules = object {
                             func(previousValue, nextValue)
                         );
                 });
-            }
                         
         def map fun[U] => (func: Function[R1, R2, Rn, U]) =>
             rules.map(tuple(), pack(func))
