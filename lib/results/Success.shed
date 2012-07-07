@@ -1,5 +1,7 @@
 package lop.results;
 
+import structs;
+
 public def Success class[T] => (myValue: T, myRemaining: Sequence[Token]) => {
     public def value fun() => myValue;
     public def remaining fun() => myRemaining;
@@ -11,6 +13,8 @@ public def Success class[T] => (myValue: T, myRemaining: Sequence[Token]) => {
         func(myValue, myRemaining);
         
     public def isSuccess fun() => true;
+    public def isFailure fun() => false;
+    public def isError fun() => false;
     
-    public def represent fun() => "Success"
+    public def struct fun() => structs.create(Success, listOf(myValue, myRemaining));
 }

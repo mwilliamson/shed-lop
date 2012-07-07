@@ -5,8 +5,10 @@ import lazySequences;
 import strings;
 
 import duck.MatchResult;
+import duck;
 
 import lop.Token;
+import lop.results.Failure;
 
 public val testing = object {
     public val isFailure = object {
@@ -25,7 +27,7 @@ public val testing = object {
                 MatchResult(true, "");
     };
     
-    public def isFailureWithError fun (error: Error) => object {
+    public def isFailureWithError fun(error: Error) => object {
         public def describeSelf fun() => "failure with error: ".concat(represent(error));
         
         public def matches fun(result: ParseResult) =>
@@ -35,14 +37,15 @@ public val testing = object {
             matchesWithDescription(result).mismatchDescription();
             
         public def matchesWithDescription fun(result: Result) =>
-            if result.isSuccess() then
+            if not(result.isFailure()) then
                 MatchResult(false, "was not failure, was ".concat(represent(result)))
             else if not(result.error().equals(error)) then
                 MatchResult(false, "error was ".concat(represent(result.error())))
             else
                 MatchResult(true, "");
-        
     };
+    
+    public def isErrorWithError fun(error: Error) => duck.equalTo(Failure(error, true));
 
     public def isSuccess fun[T] => (matcher: Matcher[T]) => object {
         public def describeSelf fun() => "success with value ".concat(matcher.describeSelf());

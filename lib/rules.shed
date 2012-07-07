@@ -22,7 +22,7 @@ val results = object {
         Success[T](value, remaining);
         
     def failure fun(expected: String, actual: String) =>
-        Failure(Error(expected, actual));
+        Failure(Error(expected, actual), false);
 };
 
 public val rules = object {
@@ -97,14 +97,25 @@ public val rules = object {
         fun(tokens: Sequence[Tokens]) =>
             results.success((), tokens);
         
+        
+    val cutStatuses = object {
+        members {
+            noCut "noCut",
+            nextCut "nextCut",
+            cut "cut"
+        }
+    };
+        
     def SequenceRule class[T1, T2, Tn] => (
         previousRule: Rule[Tuple[T1, T2]],
         nextRule: Rule[Tn],
-        func: Function[Tuple[T1, T2], Tn, Tuple[R1, R2, Rn]]
+        func: Function[Tuple[T1, T2], Tn, Tuple[R1, R2, Rn]],
+        cutStatus: String
     ) => {
         members {
             next,
             capture,
+            cut,
             tuple,
             map,
             head
@@ -114,7 +125,8 @@ public val rules = object {
             SequenceRule(
                 tuple(),
                 rule,
-                fun(previousValues: Tuple[T1, T2, Tn], _: Any) => previousValues
+                fun(previousValues: Tuple[T1, T2, Tn], _: Any) => previousValues,
+                nextCutStatus(cutStatus)
             );
         
         def capture fun[U] => (rule: Rule[U]) =>
@@ -122,14 +134,32 @@ public val rules = object {
                 tuple(),
                 rule,
                 fun(previousValues: Tuple[T1, T2, Tn], nextValue: U) =>
-                    previousValues.append(nextValue)
+                    previousValues.append(nextValue),
+                nextCutStatus(cutStatus)
             )
+            
+        def nextCutStatus fun(current: String) =>
+            if equal(current, cutStatuses.nextCut) then
+                cutStatuses.cut
+            else
+                current
+            
+        def cut fun() =>
+            SequenceRule(previousRule, nextRule, func, cutStatuses.nextCut)
 
-        def tuple fun() => 
-            fun(tokens: Sequence[Tokens]) =>
-                previousRule(tokens).bindWithRemaining(fun(previousValue: Tuple[T1, T2], remaining: Sequence[Tokens]) =>
-                    nextRule(remaining).map(fun(nextValue: Tn) =>
-                        func(previousValue, nextValue)))
+        def tuple fun() =>
+            fun(tokens: Sequence[Tokens]) => do {
+                val previousResult = previousRule(tokens);
+                return previousResult.bindWithRemaining(fun(previousValue: Tuple[T1, T2], remaining: Sequence[Tokens]) => do {
+                    val nextResult = nextRule(remaining);
+                    return if and(nextResult.isFailure(), equal(cutStatus, cutStatuses.cut)) then
+                        Failure(nextResult.error(), true)
+                    else
+                        nextResult.map(fun(nextValue: Tn) =>
+                            func(previousValue, nextValue)
+                        );
+                });
+            }
                         
         def map fun[U] => (func: Function[R1, R2, Rn, U]) =>
             rules.map(tuple(), pack(func))
@@ -139,7 +169,7 @@ public val rules = object {
     }
         
     val emptySequenceRule = SequenceRule(
-        noOpRule, noOpRule, fun(_: Any, _: Any) => tuple());
+        noOpRule, noOpRule, fun(_: Any, _: Any) => tuple(), cutStatuses.noCut);
         
     def zeroOrMoreWithSeparator fun[T] => (rule: Rule[T], separator: Rule[Any]) =>
         map(zeroOrMoreWithSeparator2(rule, separator), lists.sequenceToList)

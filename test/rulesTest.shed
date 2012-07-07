@@ -19,6 +19,7 @@ import lop.strings.createStringSource;
 import lop.testing.isSuccess;
 import lop.testing.isFailure;
 import lop.testing.isFailureWithError;
+import lop.testing.isErrorWithError;
 import lop.Error;
 import lop.results.Failure;
 
@@ -237,6 +238,30 @@ public val rulesTest = listOf[TestCase](
         )
     ),
     
+    TestCase("rules.sequence() returns error if missing element after cut", fun() =>
+        assertErrorParseWithError[String](
+            rules.sequence()
+                .next(rules.token("keyword", "if"))
+                .cut()
+                .next(rules.tokenOfType("identifier"))
+                .tuple(),
+            listOf(Token("keyword", "if", source("if")), Token("keyword", "then", source("then"))),
+            Error("identifier", "keyword \"then\"")
+        )
+    ),
+    
+    TestCase("rules.sequence() returns failure if missing element before cut", fun() =>
+        assertFailedParseWithError[String](
+            rules.sequence()
+                .next(rules.token("keyword", "if"))
+                .cut()
+                .next(rules.tokenOfType("identifier"))
+                .tuple(),
+            listOf(Token("keyword", "then", source("then"))),
+            Error("keyword \"if\"", "keyword \"then\"")
+        )
+    ),
+    
     TestCase("zeroOrMoreWithSeparator can match no values", fun() =>
         assertSuccessfulParse(
             rules.zeroOrMoreWithSeparator(rules.tokenOfType("identifier"), rules.token("symbol", ",")),
@@ -294,6 +319,10 @@ def assertFailedParse fun[T] => (rule: Rule[T], input: List[Token]) => do {
 
 def assertFailedParseWithError fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do {
     return assertParse[T](rule, input, isFailureWithError(error));
+};
+
+def assertErrorParseWithError fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do {
+    return assertParse[T](rule, input, isErrorWithError(error));
 };
 
 def assertSuccessfulParse fun[T] => (rule: Rule[T], input: List[Token], value: T) => do {
