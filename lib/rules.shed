@@ -167,12 +167,12 @@ public val rules = object {
                 );
                 val remainingRule = zeroOrMore(separatorAndRule);
                 val remainingResult = remainingRule(result.remaining());
-                // zeroOrMore always returns success, and therefore always has a value
-                return results.success(sequences.cons(result.value(), remainingResult.value()), remainingResult.remaining());
-            } else if result.isFatal() then
-                result
-            else
-                results.success(sequences.nil, tokens);
+                
+                return remainingResult.map(fun(remainingValues: Sequence[T]) =>
+                    sequences.cons(result.value(), remainingValues)
+                );
+            } else
+                failureToSuccess(result, results.success(sequences.nil, tokens));
         }
         
     def zeroOrMore fun[T] => (rule: Rule[T]) =>
@@ -185,6 +185,9 @@ public val rules = object {
                 else
                     result.map(sequences.singleton);
             } else
-                results.success(sequences.nil, tokens);
+                failureToSuccess(result, results.success(sequences.nil, tokens));
         }
+        
+    def failureToSuccess fun[T] => (result: ParseResult[T], success: Success[T]) =>
+        if result.isFailure() then success else result
 };
