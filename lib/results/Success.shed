@@ -14,7 +14,7 @@ public def Success class[T] => (myValue: T, myRemaining: Sequence[Token]) => {
         
     public def isSuccess fun() => true;
     public def isFailure fun() => false;
-    public def isError fun() => false;
+    public def isFatal fun() => false;
     
     public def struct fun() => structs.create(Success, listOf(myValue, myRemaining));
 }

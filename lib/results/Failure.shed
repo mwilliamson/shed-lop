@@ -2,16 +2,19 @@ package lop.results;
 
 import structs;
 
-public def Failure class(myError: Error, isFatal: Boolean) => {
-    public def map fun[R] => () => Failure(myError, isFatal);
+public def Failure class(error: Error, isFatal: Boolean) => {
+    members {
+        map,
+        bindWithRemaining,
+        isSuccess fun() => false,
+        isFailure fun() => not(isFatal),
+        isFatal fun() => isFatal,
+        error fun() => error,
+        struct fun() => structs.create(Failure, listOf(error, isFatal))
+    }
     
-    public def bindWithRemaining fun[R] => (func: Function[Nothing, Sequence[Token], ParseResult[R]]) =>
-        Failure(myError, isFatal);
-        
-    public def isSuccess fun() => false;
-    public def isFailure fun() => not(isFatal);
-    public def isError fun() => isFatal;
-    public def error fun() => myError;
+    def map fun[R] => () => Failure(error, isFatal);
     
-    public def struct fun() => structs.create(Failure, listOf(myError, isFatal))
+    def bindWithRemaining fun[R] => (func: Function[Nothing, Sequence[Token], ParseResult[R]]) =>
+        Failure(error, isFatal);
 }
