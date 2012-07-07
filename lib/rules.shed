@@ -97,20 +97,12 @@ public val rules = object {
         fun(tokens: Sequence[Tokens]) =>
             results.success((), tokens);
         
-        
-    val cutStatuses = object {
-        members {
-            noCut "noCut",
-            nextCut "nextCut",
-            cut "cut"
-        }
-    };
-        
     def SequenceRule class[T1, T2, Tn] => (
         previousRule: Rule[Tuple[T1, T2]],
         nextRule: Rule[Tn],
         func: Function[Tuple[T1, T2], Tn, Tuple[R1, R2, Rn]],
-        cutStatus: String
+        hasCut: Boolean,
+        nextCut: Boolean
     ) => {
         members {
             next,
@@ -126,7 +118,8 @@ public val rules = object {
                 tuple(),
                 rule,
                 fun(previousValues: Tuple[T1, T2, Tn], _: Any) => previousValues,
-                nextCutStatus(cutStatus)
+                nextCut,
+                nextCut
             );
         
         def capture fun[U] => (rule: Rule[U]) =>
@@ -135,24 +128,19 @@ public val rules = object {
                 rule,
                 fun(previousValues: Tuple[T1, T2, Tn], nextValue: U) =>
                     previousValues.append(nextValue),
-                nextCutStatus(cutStatus)
+                nextCut,
+                nextCut
             )
             
-        def nextCutStatus fun(current: String) =>
-            if equal(current, cutStatuses.nextCut) then
-                cutStatuses.cut
-            else
-                current
-            
         def cut fun() =>
-            SequenceRule(previousRule, nextRule, func, cutStatuses.nextCut)
+            SequenceRule(previousRule, nextRule, func, hasCut, true)
 
         def tuple fun() =>
             fun(tokens: Sequence[Tokens]) => do {
                 val previousResult = previousRule(tokens);
                 return previousResult.bindWithRemaining(fun(previousValue: Tuple[T1, T2], remaining: Sequence[Tokens]) => do {
                     val nextResult = nextRule(remaining);
-                    return if and(nextResult.isFailure(), equal(cutStatus, cutStatuses.cut)) then
+                    return if and(nextResult.isFailure(), hasCut) then
                         Failure(nextResult.error(), true)
                     else
                         nextResult.map(fun(nextValue: Tn) =>
@@ -169,7 +157,7 @@ public val rules = object {
     }
         
     val emptySequenceRule = SequenceRule(
-        noOpRule, noOpRule, fun(_: Any, _: Any) => tuple(), cutStatuses.noCut);
+        noOpRule, noOpRule, fun(_: Any, _: Any) => tuple(), false, false);
         
     def zeroOrMoreWithSeparator fun[T] => (rule: Rule[T], separator: Rule[Any]) =>
         map(zeroOrMoreWithSeparator2(rule, separator), lists.sequenceToList)
