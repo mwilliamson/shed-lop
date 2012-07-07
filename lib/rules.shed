@@ -169,7 +169,9 @@ public val rules = object {
                 val remainingResult = remainingRule(result.remaining());
                 // zeroOrMore always returns success, and therefore always has a value
                 return results.success(sequences.cons(result.value(), remainingResult.value()), remainingResult.remaining());
-            } else
+            } else if result.isFatal() then
+                result
+            else
                 results.success(sequences.nil, tokens);
         }
         

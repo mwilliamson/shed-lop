@@ -316,6 +316,14 @@ public val rulesTest = listOf[TestCase](
             ),
             equalTo(tuple())
         )
+    ),
+    
+    TestCase("zeroOrMoreWithSeparator fails fatally if first match fails fatally", fun() =>
+        assertErrorParseWithError(
+            rules.zeroOrMoreWithSeparator(fatalRule, rules.token("symbol", ",")),
+            emptyList,
+            Error("<expected>", "<actual>")
+        )
     )
 );
 
