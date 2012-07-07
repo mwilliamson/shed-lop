@@ -339,6 +339,17 @@ public val rulesTest = listOf[TestCase](
             ),
             Error("identifier", "symbol \",\"")
         )
+    ),
+    
+    TestCase("zeroOrMoreWithSeparator fails fatally if separator match fails fatally", fun() =>
+        assertErrorParseWithError(
+            rules.zeroOrMoreWithSeparator(rules.tokenOfType("identifier"), fatalRule),
+            listOf(
+                Token("identifier", "go", source("go")),
+                Token("symbol", ",", source(","))
+            ),
+            Error("<expected>", "<actual>")
+        )
     )
 );
 
