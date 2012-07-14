@@ -9,6 +9,7 @@ import lazySequences;
 import sequences;
 
 import lop.rules;
+import lop.results;
 
 def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: List[Any]) => {
     members {
@@ -29,32 +30,23 @@ def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: Li
         applyRules(infixRules.toSequence())
         
     def applyRules fun(applicableInfixRules: Sequence[InfixRule[T]]) =>
-        fun(tokens: Sequence[Token]) => do {
-            val prefixResult = prefixRule(tokens);
-            return if (prefixResult.isSuccess()) then
-                applyInfixRules(applicableInfixRules)(prefixResult)
-            else
-                prefixResult;
-        }
+        fun(tokens: Sequence[Token]) =>
+            prefixRule(tokens).bindWithRemaining(applyInfixRules(applicableInfixRules))
     
     // TODO: handle fatal failures
     def applyInfixRules fun(applicableInfixRules: Sequence[InfixRule[T]]) =>
-        fun(leftResult: ParseResult[T]) => do {
-            val remaining = leftResult.remaining();
+        fun(left: T, remaining: Sequence[Token]) => do {
             val applyInfixRule = fun(infixRule: InfixRule[T]) => infixRule.apply(remaining);
             val infixResults = lazySequences.map(applyInfixRule, applicableInfixRules);
             val terminalInfixResults = lazySequences.filter(isTerminalResult, infixResults);
             return sequences.head(terminalInfixResults)
                 .map(fun(infixResult: ParseResult[T]) =>
-                    infixResult.map(fun(infix: Any) => infix(leftResult.value()))
+                    infixResult.map(fun(infix: Any) => infix(left))
                 )
                 .map(fun(result: ParseResult[T]) =>
-                    if result.isSuccess() then
-                        applyInfixRules(applicableInfixRules)(result)
-                    else
-                        result
+                    result.bindWithRemaining(applyInfixRules(applicableInfixRules))
                 )
-                .valueOrElse(fun() => leftResult);
+                .valueOrElse(fun() => results.success(left, remaining));
         };
     
     def isTerminalResult fun(result: ParseResult[T]) => not(result.isFailure())
