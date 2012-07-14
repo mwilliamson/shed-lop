@@ -36,21 +36,28 @@ def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: Li
             else
                 prefixResult;
         }
-        
+    
+    // TODO: handle fatal failures
     def applyInfixRules fun(applicableInfixRules: Sequence[InfixRule[T]]) =>
         fun(leftResult: ParseResult[T]) => do {
             val remaining = leftResult.remaining();
             val applyInfixRule = fun(infixRule: InfixRule[T]) => infixRule.apply(remaining);
             val infixResults = lazySequences.map(applyInfixRule, applicableInfixRules);
-            val successfulInfixResults = lazySequences.filter(fun(result: ParseResult[T]) => result.isSuccess(), infixResults);
-            return sequences.head(successfulInfixResults)
+            val terminalInfixResults = lazySequences.filter(isTerminalResult, infixResults);
+            return sequences.head(terminalInfixResults)
                 .map(fun(infixResult: ParseResult[T]) =>
                     infixResult.map(fun(infix: Any) => infix(leftResult.value()))
                 )
-                .map(fun(result: ParseResult[T]) => applyInfixRules(applicableInfixRules)(result))
+                .map(fun(result: ParseResult[T]) =>
+                    if result.isSuccess() then
+                        applyInfixRules(applicableInfixRules)(result)
+                    else
+                        result
+                )
                 .valueOrElse(fun() => leftResult);
         };
-            
+    
+    def isTerminalResult fun(result: ParseResult[T]) => not(result.isFailure())
         
     def infixRulesUntilInclusive fun(name: String) =>
         remainingInfixRulesUntil(name, infixRules.toSequence(), true)

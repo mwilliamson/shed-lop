@@ -18,8 +18,11 @@ import duck.MatchResult;
 import lop.pratt;
 import lop.rules;
 import lop.token.Token;
+import lop.error.Error;
+import lop.results;
 
 import lop.testing.isSuccess;
+import lop.testing.isErrorWithError;
 
 def source fun(value: String) => createStringSource(value, "raw string");
 
@@ -141,21 +144,28 @@ val testCases = listOf(
             ),
             equalTo(tuple("+", tuple("^", "1", tuple("^", "2", "3")), tuple("^", "4", "5")))
         );
-    })
+    }),
+    
+    TestCase("fatal failure in infix rule is returned", fun() =>
+        assertFatalParseWithError(
+            pratt.parser("expression",
+                listOf(rules.tokenOfType("identifier")),
+                listOf(pratt.infix("power", fatalRule))
+            ).rule(),
+            listOf(Token("identifier", "blah")),
+            Error("<expected>", "<actual>")
+        )
+    )
 );
 
-def failingRule fun(tokens: Sequence[Token]) =>
-    Failure(Error("<expected>", "<actual>"));
+def fatalRule fun(tokens: Sequence[Token]) =>
+    results.fatal(Error("<expected>", "<actual>"));
 
 def stringSource fun(string: String) =>
     createStringSource(string, "raw string");
 
-def assertFailedParse fun[T] => (rule: Rule[T], input: List[Token]) => do {
-    return assertParse[T](rule, input, isFailure);
-};
-
-def assertFailedParseWithError fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do {
-    return assertParse[T](rule, input, isFailureWithError(error));
+def assertFatalParseWithError fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do {
+    return assertParse[T](rule, input, isErrorWithError(error));
 };
 
 def assertSuccessfulParse fun[T] => (rule: Rule[T], input: List[Token], value: T) => do {
