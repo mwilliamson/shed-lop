@@ -1,8 +1,12 @@
-package lop;
+module lop.token;
+
+members {
+    Token
+}
 
 import structs;
 
-public def Token class(name: String, value: String, source: StringSource) => {
+def Token class(name: String, value: String, source: StringSource) => {
     members {
         name fun() => name,
         value fun() => value,

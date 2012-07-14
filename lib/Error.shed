@@ -1,9 +1,13 @@
-package lop;
+module lop.error;
+
+members {
+    Error
+}
 
 // TODO: since we have the notion of an error being a result, we should
 // rename this to be Description (of a failure/error) or somesuch
 
-public def Error class(myExpected: String, myActual: String) => {
+def Error class(myExpected: String, myActual: String) => {
     public def expected fun() => myExpected;
     public def actual fun() => myActual;
     

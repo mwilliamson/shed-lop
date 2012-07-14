@@ -1,6 +1,10 @@
-package lop;
+module lop.range;
 
-public def Range class(myStart: Double, myEnd: Double) => {
+members {
+    Range
+}
+
+def Range class(myStart: Double, myEnd: Double) => {
     public def start fun() => myStart;
     public def end fun() => myEnd;
     

@@ -1,0 +1,46 @@
+module lop.results;
+
+members {
+    ParseResult,
+    Failure,
+    Success
+}
+
+import structs;
+
+// TODO: should be an interface
+def ParseResult class() => {}
+
+def Failure class(error: Error, isFatal: Boolean) => {
+    members {
+        map,
+        bindWithRemaining,
+        isSuccess fun() => false,
+        isFailure fun() => not(isFatal),
+        isFatal fun() => isFatal,
+        error fun() => error,
+        struct fun() => structs.create(Failure, listOf(error, isFatal))
+    }
+    
+    def map fun[R] => () => Failure(error, isFatal);
+    
+    def bindWithRemaining fun[R] => (func: Function[Nothing, Sequence[Token], ParseResult[R]]) =>
+        Failure(error, isFatal);
+}
+
+def Success class[T] => (myValue: T, myRemaining: Sequence[Token]) => {
+    public def value fun() => myValue;
+    public def remaining fun() => myRemaining;
+    
+    public def map fun[R] => (func: Function[T, R]) =>
+        Success[R](func(myValue), myRemaining);
+        
+    public def bindWithRemaining fun[R] => (func: Function[T, Sequence[Token], ParseResult[R]]) =>
+        func(myValue, myRemaining);
+        
+    public def isSuccess fun() => true;
+    public def isFailure fun() => false;
+    public def isFatal fun() => false;
+    
+    public def struct fun() => structs.create(Success, listOf(myValue, myRemaining));
+}

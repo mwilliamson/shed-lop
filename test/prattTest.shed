@@ -1,4 +1,8 @@
-package lop;
+module lop.prattTest;
+
+members {
+    testCases
+}
 
 import sequences;
 import strings;
@@ -13,13 +17,13 @@ import duck.MatchResult;
 
 import lop.pratt;
 import lop.rules;
-import lop.Token;
+import lop.token.Token;
 
 import lop.testing.isSuccess;
 
 def source fun(value: String) => createStringSource(value, "raw string");
 
-public val prattTest = listOf(
+val testCases = listOf(
     TestCase("can parse prefix expression", fun() =>
         assertSuccessfulParse(
             pratt.parser("expression",

@@ -1,4 +1,14 @@
-package lop;
+module lop.rules;
+
+members {
+    firstOf,
+    tokenOfType,
+    token,
+    map,
+    sequence,
+    zeroOrMore,
+    zeroOrMoreWithSeparator
+}
 
 import lazySequenceables;
 import sequenceables;
@@ -7,11 +17,11 @@ import sequences;
 import lists;
 import tuples;
 
-import lop.Token;
+import lop.token.Token;
 import lop.results.ParseResult;
 import lop.results.Success;
 import lop.results.Failure;
-import lop.Error;
+import lop.error.Error;
 
 val results = object {
     members {
@@ -25,173 +35,161 @@ val results = object {
         Failure(Error(expected, actual), false);
 };
 
-public val rules = object {
+// TODO: should be type Rule[T] = Fun(Sequence[Token]) => ParseResult[T]
+def Rule class() => {}
+
+def firstOf fun(name: String, rules: List[Rule]) =>
+    fun(tokens: Sequence[Token]) => do {
+        val ruleResults = lazySequenceables.map[Rule, ParseResult](
+            fun(rule: Rule) => rule(tokens),
+            rules
+        );
+        val stops = lazySequenceables.filter(
+            fun(result: ParseResult) => or(result.isSuccess(), result.isFatal()),
+            ruleResults
+        );
+        return sequenceables.head(stops)
+            .valueOrElse[ParseResult](fun() => withNextToken(tokens, fun(token: Token) =>
+                results.failure(name, describeToken(token))
+            ));
+    }
+    
+def tokenOfType fun(name: String) =>
+    fun(tokens: Sequence[Token]) =>
+        withNextToken(tokens, fun(token: Token) =>
+            if token.name().equals(name) then do {
+                // TODO: should have function to get an option of both head and tail at the same time
+                return results.success[String](token.value(), tokens.tail());
+            } else
+                results.failure(name, describeToken(token))
+        )
+
+def token fun(name: String, value: String) =>
+    fun(tokens: Sequence[Token]) =>
+        withNextToken(tokens, fun(token: Token) =>
+            if and(token.name().equals(name), token.value().equals(value)) then
+                results.success[String](token.value(), tokens.tail())
+            else
+                results.failure(describeTokenNameAndValue(name, value), describeToken(token))
+        )
+        
+def describeToken fun(token: Token) =>
+    describeTokenNameAndValue(token.name(), token.value())
+    
+def describeTokenNameAndValue fun(name: String, value: String) =>
+    name.concat(" \"").concat(value).concat("\"");
+    
+def withNextToken fun(tokens: Sequence[Token], func: Function[Token, ParseResult[String]]) =>
+    sequences.head[Token](tokens)
+        .map[Token, ParseResult[String]](func)
+        .valueOrElse[ParseResult](fun() => results.failure("token", "end of token sequence"))
+        
+def map fun[F, T] => (rule: Rule, func: Function[F, T]) =>
+    fun(tokens: Sequence[Token]) =>
+        rule(tokens).map[T](func)
+
+// type SequenceRule[T] = Rule[T] | Capture[T];
+
+def sequence fun() =>
+    emptySequenceRule;
+    
+val noOpRule =
+    fun(tokens: Sequence[Tokens]) =>
+        results.success((), tokens);
+    
+def SequenceRule class[T1, T2, Tn] => (
+    previousRule: Rule[Tuple[T1, T2]],
+    nextRule: Rule[Tn],
+    func: Function[Tuple[T1, T2], Tn, Tuple[R1, R2, Rn]],
+    hasCut: Boolean,
+    nextCut: Boolean
+) => {
     members {
-        firstOf,
-        tokenOfType,
-        token,
-        map,
-        sequence,
-        zeroOrMore,
-        zeroOrMoreWithSeparator
+        next,
+        capture,
+        cut,
+        tuple,
+        map sequenceMap,
+        head
     }
-    
-    // TODO: should be type Rule[T] = Fun(Sequence[Token]) => ParseResult[T]
-    def Rule class() => {}
-    
-    def firstOf fun(name: String, rules: List[Rule]) =>
-        fun(tokens: Sequence[Token]) => do {
-            val ruleResults = lazySequenceables.map[Rule, ParseResult](
-                fun(rule: Rule) => rule(tokens),
-                rules
-            );
-            val stops = lazySequenceables.filter(
-                fun(result: ParseResult) => or(result.isSuccess(), result.isFatal()),
-                ruleResults
-            );
-            return sequenceables.head(stops)
-                .valueOrElse[ParseResult](fun() => withNextToken(tokens, fun(token: Token) =>
-                    results.failure(name, describeToken(token))
-                ));
-        }
-        
-    def tokenOfType fun(name: String) =>
-        fun(tokens: Sequence[Token]) =>
-            withNextToken(tokens, fun(token: Token) =>
-                if token.name().equals(name) then do {
-                    // TODO: should have function to get an option of both head and tail at the same time
-                    return results.success[String](token.value(), tokens.tail());
-                } else
-                    results.failure(name, describeToken(token))
-            )
-    
-    def token fun(name: String, value: String) =>
-        fun(tokens: Sequence[Token]) =>
-            withNextToken(tokens, fun(token: Token) =>
-                if and(token.name().equals(name), token.value().equals(value)) then
-                    results.success[String](token.value(), tokens.tail())
-                else
-                    results.failure(describeTokenNameAndValue(name, value), describeToken(token))
-            )
-            
-    def describeToken fun(token: Token) =>
-        describeTokenNameAndValue(token.name(), token.value())
-        
-    def describeTokenNameAndValue fun(name: String, value: String) =>
-        name.concat(" \"").concat(value).concat("\"");
-        
-    def withNextToken fun(tokens: Sequence[Token], func: Function[Token, ParseResult[String]]) =>
-        sequences.head[Token](tokens)
-            .map[Token, ParseResult[String]](func)
-            .valueOrElse[ParseResult](fun() => results.failure("token", "end of token sequence"))
-            
-    def map fun[F, T] => (rule: Rule, func: Function[F, T]) =>
-        fun(tokens: Sequence[Token]) =>
-            rule(tokens).map[T](func)
 
-    // type SequenceRule[T] = Rule[T] | Capture[T];
-
-    def sequence fun() =>
-        emptySequenceRule;
+    def next fun(rule: Rule[Any]) =>
+        append(
+            rule,
+            fun(previousValues: Tuple[T1, T2, Tn], _: Any) => previousValues
+        );
+    
+    def capture fun[U] => (rule: Rule[U]) =>
+        append(
+            rule,
+            fun(previousValues: Tuple[T1, T2, Tn], nextValue: U) =>
+                previousValues.append(nextValue)
+        )
         
-    val noOpRule =
+    def append fun[U] => (rule: Rule[U], func: Function[Tuple[T1, T2, Tn], U]) =>
+        SequenceRule(tuple(), rule, func, nextCut, nextCut);
+        
+    def cut fun() =>
+        SequenceRule(previousRule, nextRule, func, hasCut, true)
+
+    def tuple fun() =>
         fun(tokens: Sequence[Tokens]) =>
-            results.success((), tokens);
-        
-    def SequenceRule class[T1, T2, Tn] => (
-        previousRule: Rule[Tuple[T1, T2]],
-        nextRule: Rule[Tn],
-        func: Function[Tuple[T1, T2], Tn, Tuple[R1, R2, Rn]],
-        hasCut: Boolean,
-        nextCut: Boolean
-    ) => {
-        members {
-            next,
-            capture,
-            cut,
-            tuple,
-            map,
-            head
-        }
-
-        def next fun(rule: Rule[Any]) =>
-            append(
-                rule,
-                fun(previousValues: Tuple[T1, T2, Tn], _: Any) => previousValues
-            );
-        
-        def capture fun[U] => (rule: Rule[U]) =>
-            append(
-                rule,
-                fun(previousValues: Tuple[T1, T2, Tn], nextValue: U) =>
-                    previousValues.append(nextValue)
-            )
-            
-        def append fun[U] => (rule: Rule[U], func: Function[Tuple[T1, T2, Tn], U]) =>
-            SequenceRule(tuple(), rule, func, nextCut, nextCut);
-            
-        def cut fun() =>
-            SequenceRule(previousRule, nextRule, func, hasCut, true)
-
-        def tuple fun() =>
-            fun(tokens: Sequence[Tokens]) =>
-                previousRule(tokens).bindWithRemaining(fun(previousValue: Tuple[T1, T2], remaining: Sequence[Tokens]) => do {
-                    val nextResult = nextRule(remaining);
-                    return if and(nextResult.isFailure(), hasCut) then
-                        Failure(nextResult.error(), true)
-                    else
-                        nextResult.map(fun(nextValue: Tn) =>
-                            func(previousValue, nextValue)
-                        );
-                });
-                        
-        def map fun[U] => (func: Function[R1, R2, Rn, U]) =>
-            rules.map(tuple(), pack(func))
-            
-        def head fun() =>
-            rules.map(tuple(), tuples.head)
-    }
-        
-    val emptySequenceRule = SequenceRule(
-        noOpRule, noOpRule, fun(_: Any, _: Any) => tuple(), false, false);
-        
-    def zeroOrMoreWithSeparator fun[T] => (rule: Rule[T], separator: Rule[Any]) =>
-        map(zeroOrMoreWithSeparator2(rule, separator), lists.sequenceToList)
-        
-    def zeroOrMoreWithSeparator2 fun[T] => (rule: Rule[T], separator: Rule[Any]) =>
-        fun(tokens: Sequence[Token]) => do {
-            val result = rule(tokens);
-            return if result.isSuccess() then do {
-                val separatorAndRule = map(
-                    sequence().next(separator).capture(rule).tuple(),
-                    tuples.head
-                );
-                val remainingRule = zeroOrMore2(separatorAndRule);
-                val remainingResult = remainingRule(result.remaining());
-                
-                return remainingResult.map(fun(remainingValues: Sequence[T]) =>
-                    sequences.cons(result.value(), remainingValues)
-                );
-            } else
-                failureToSuccess(result, results.success(sequences.nil, tokens));
-        }
-        
-    def zeroOrMore fun[T] => (rule: Rule[T]) =>
-        map(zeroOrMore2(rule), lists.sequenceToList)
-        
-    def zeroOrMore2 fun[T] => (rule: Rule[T]) =>
-        fun(tokens: Sequence[Token]) => do {
-            val result = rule(tokens);
-            return if result.isSuccess() then do {
-                val remainingResult = zeroOrMore2(rule)(result.remaining());
-                return if remainingResult.isSuccess() then
-                    results.success(sequences.cons(result.value(), remainingResult.value()), remainingResult.remaining())
+            previousRule(tokens).bindWithRemaining(fun(previousValue: Tuple[T1, T2], remaining: Sequence[Tokens]) => do {
+                val nextResult = nextRule(remaining);
+                return if and(nextResult.isFailure(), hasCut) then
+                    Failure(nextResult.error(), true)
                 else
-                    result.map(sequences.singleton);
-            } else
-                failureToSuccess(result, results.success(sequences.nil, tokens));
-        }
+                    nextResult.map(fun(nextValue: Tn) =>
+                        func(previousValue, nextValue)
+                    );
+            });
+                    
+    def sequenceMap fun[U] => (func: Function[R1, R2, Rn, U]) =>
+        map(tuple(), pack(func))
         
-    def failureToSuccess fun[T] => (result: ParseResult[T], success: Success[T]) =>
-        if result.isFailure() then success else result
-};
+    def head fun() =>
+        map(tuple(), tuples.head)
+}
+    
+val emptySequenceRule = SequenceRule(
+    noOpRule, noOpRule, fun(_: Any, _: Any) => tuple(), false, false);
+    
+def zeroOrMoreWithSeparator fun[T] => (rule: Rule[T], separator: Rule[Any]) =>
+    map(zeroOrMoreWithSeparator2(rule, separator), lists.sequenceToList)
+    
+def zeroOrMoreWithSeparator2 fun[T] => (rule: Rule[T], separator: Rule[Any]) =>
+    fun(tokens: Sequence[Token]) => do {
+        val result = rule(tokens);
+        return if result.isSuccess() then do {
+            val separatorAndRule = map(
+                sequence().next(separator).capture(rule).tuple(),
+                tuples.head
+            );
+            val remainingRule = zeroOrMore2(separatorAndRule);
+            val remainingResult = remainingRule(result.remaining());
+            
+            return remainingResult.map(fun(remainingValues: Sequence[T]) =>
+                sequences.cons(result.value(), remainingValues)
+            );
+        } else
+            failureToSuccess(result, results.success(sequences.nil, tokens));
+    }
+    
+def zeroOrMore fun[T] => (rule: Rule[T]) =>
+    map(zeroOrMore2(rule), lists.sequenceToList)
+    
+def zeroOrMore2 fun[T] => (rule: Rule[T]) =>
+    fun(tokens: Sequence[Token]) => do {
+        val result = rule(tokens);
+        return if result.isSuccess() then do {
+            val remainingResult = zeroOrMore2(rule)(result.remaining());
+            return if remainingResult.isSuccess() then
+                results.success(sequences.cons(result.value(), remainingResult.value()), remainingResult.remaining())
+            else
+                result.map(sequences.singleton);
+        } else
+            failureToSuccess(result, results.success(sequences.nil, tokens));
+    }
+    
+def failureToSuccess fun[T] => (result: ParseResult[T], success: Success[T]) =>
+    if result.isFailure() then success else result

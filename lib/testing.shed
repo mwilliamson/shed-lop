@@ -1,4 +1,11 @@
-package lop;
+module lop.testing;
+
+members {
+    isFailure,
+    isFailureWithError,
+    isErrorWithError,
+    isSuccess
+}
 
 import sequences;
 import lazySequences;
@@ -7,66 +14,64 @@ import strings;
 import duck.MatchResult;
 import duck;
 
-import lop.Token;
+import lop.token.Token;
 import lop.results.Failure;
 
-public val testing = object {
-    public val isFailure = object {
-        public def describeSelf fun() => "failure";
-        
-        public def matches fun(result: ParseResult) =>
-            matchesWithDescription(result).matches();
-        
-        public def describeMismatch fun(result: ParseResult) =>
-            matchesWithDescription(result).mismatchDescription();
-            
-        public def matchesWithDescription fun(result: Result) =>
-            if result.isSuccess() then
-                MatchResult(false, "was not failure, was ".concat(represent(result)))
-            else
-                MatchResult(true, "");
-    };
+val isFailure = object {
+    public def describeSelf fun() => "failure";
     
-    public def isFailureWithError fun(error: Error) => object {
-        public def describeSelf fun() => "failure with error: ".concat(represent(error));
-        
-        public def matches fun(result: ParseResult) =>
-            matchesWithDescription(result).matches();
-        
-        public def describeMismatch fun(result: ParseResult) =>
-            matchesWithDescription(result).mismatchDescription();
-            
-        public def matchesWithDescription fun(result: Result) =>
-            if not(result.isFailure()) then
-                MatchResult(false, "was not failure, was ".concat(represent(result)))
-            else if not(result.error().equals(error)) then
-                MatchResult(false, "error was ".concat(represent(result.error())))
-            else
-                MatchResult(true, "");
-    };
+    public def matches fun(result: ParseResult) =>
+        matchesWithDescription(result).matches();
     
-    public def isErrorWithError fun(error: Error) => duck.equalTo(Failure(error, true));
-
-    public def isSuccess fun[T] => (matcher: Matcher[T]) => object {
-        public def describeSelf fun() => "success with value ".concat(matcher.describeSelf());
+    public def describeMismatch fun(result: ParseResult) =>
+        matchesWithDescription(result).mismatchDescription();
         
-        public def matches fun(result: ParseResult) =>
-            matchesWithDescription(result).matches();
-        
-        public def describeMismatch fun(result: ParseResult) =>
-            matchesWithDescription(result).mismatchDescription();
-            
-        public def matchesWithDescription fun(result: Result) =>
-            if result.isSuccess() then
-                if not(matcher.matches(result.value())) then
-                    MatchResult(false, "value didn't match: ".concat(matcher.describeMismatch(result.value())))
-                else if not(sequences.isNil(result.remaining())) then
-                    MatchResult(false, "entire input was not consumed, remaining was: ".concat(
-                        strings.joinSequence(", ", lazySequences.map(represent, result.remaining()))
-                    ))
-                else
-                    MatchResult(true, "")
-            else
-                MatchResult(false, "was not success, was ".concat(represent(result)))
-    }
+    public def matchesWithDescription fun(result: Result) =>
+        if result.isSuccess() then
+            MatchResult(false, "was not failure, was ".concat(represent(result)))
+        else
+            MatchResult(true, "");
 };
+
+def isFailureWithError fun(error: Error) => object {
+    public def describeSelf fun() => "failure with error: ".concat(represent(error));
+    
+    public def matches fun(result: ParseResult) =>
+        matchesWithDescription(result).matches();
+    
+    public def describeMismatch fun(result: ParseResult) =>
+        matchesWithDescription(result).mismatchDescription();
+        
+    public def matchesWithDescription fun(result: Result) =>
+        if not(result.isFailure()) then
+            MatchResult(false, "was not failure, was ".concat(represent(result)))
+        else if not(result.error().equals(error)) then
+            MatchResult(false, "error was ".concat(represent(result.error())))
+        else
+            MatchResult(true, "");
+};
+
+def isErrorWithError fun(error: Error) => duck.equalTo(Failure(error, true));
+
+def isSuccess fun[T] => (matcher: Matcher[T]) => object {
+    public def describeSelf fun() => "success with value ".concat(matcher.describeSelf());
+    
+    public def matches fun(result: ParseResult) =>
+        matchesWithDescription(result).matches();
+    
+    public def describeMismatch fun(result: ParseResult) =>
+        matchesWithDescription(result).mismatchDescription();
+        
+    public def matchesWithDescription fun(result: Result) =>
+        if result.isSuccess() then
+            if not(matcher.matches(result.value())) then
+                MatchResult(false, "value didn't match: ".concat(matcher.describeMismatch(result.value())))
+            else if not(sequences.isNil(result.remaining())) then
+                MatchResult(false, "entire input was not consumed, remaining was: ".concat(
+                    strings.joinSequence(", ", lazySequences.map(represent, result.remaining()))
+                ))
+            else
+                MatchResult(true, "")
+        else
+            MatchResult(false, "was not success, was ".concat(represent(result)))
+}

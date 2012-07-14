@@ -1,10 +1,14 @@
-package lop;
+module lop.sources;
+
+members {
+    StringSource
+}
 
 import structs;
 
-import lop.Range;
+import lop.range.Range;
 
-public def StringSource class(string: String, myDescription: String, myRange: Range) => {
+def StringSource class(string: String, myDescription: String, myRange: Range) => {
     public def asString fun() => string.substring(myRange.start(), myRange.end());
     public def description fun() => myDescription;
     public def indexRange fun() => myRange;

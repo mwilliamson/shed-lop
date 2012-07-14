@@ -1,9 +1,11 @@
-package lop;
+module lop.strings;
 
-import lop.StringSource;
-import lop.Range;
+members {
+    createStringSource
+}
 
-public val strings = object {
-    public def createStringSource fun(string: String, description: String) =>
-        StringSource(string, description, Range(0, string.length()));
-};
+import lop.sources.StringSource;
+import lop.range.Range;
+
+def createStringSource fun(string: String, description: String) =>
+    StringSource(string, description, Range(0, string.length()));

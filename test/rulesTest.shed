@@ -1,4 +1,8 @@
-package lop;
+module lop.rulesTest;
+
+members {
+    testCases
+}
 
 import sequences;
 import strings;
@@ -13,19 +17,19 @@ import duck.MatchResult;
 
 import lop.rules;
 import lop.results.Success;
-import lop.Token;
-import lop.StringSource;
+import lop.token.Token;
+import lop.sources.StringSource;
 import lop.strings.createStringSource;
 import lop.testing.isSuccess;
 import lop.testing.isFailure;
 import lop.testing.isFailureWithError;
 import lop.testing.isErrorWithError;
-import lop.Error;
+import lop.error.Error;
 import lop.results.Failure;
 
 def source fun(value: String) => createStringSource(value, "raw string");
 
-public val rulesTest = listOf[TestCase](
+val testCases = listOf[TestCase](
     TestCase("rules.token fails if sequence is empty", fun() =>
         assertFailedParseWithError[String](
             rules.token("identifier", "true"),

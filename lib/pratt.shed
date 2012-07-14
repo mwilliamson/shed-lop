@@ -1,82 +1,80 @@
-package lop;
+module lop.pratt;
+
+members {
+    parser Parser,
+    infix InfixRule
+}
 
 import lazySequences;
 import sequences;
 
 import lop.rules;
 
-public val pratt = object {
+def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: List[Any]) => {
     members {
-        parser Parser,
-        infix InfixRule
-    }
-        
-    def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: List[Any]) => {
-        members {
-            leftAssociative,
-            rightAssociative,
-            rule
-        }
-        
-        val prefixRule = rules.firstOf(name, prefixRules);
-        
-        def leftAssociative fun(name: String) =>
-            applyRules(infixRulesUntilExclusive(name))
-            
-        def rightAssociative fun(name: String) =>
-            applyRules(infixRulesUntilInclusive(name))
-        
-        def rule fun() =>
-            applyRules(infixRules.toSequence())
-            
-        def applyRules fun(applicableInfixRules: Sequence[InfixRule[T]]) =>
-            fun(tokens: Sequence[Token]) => do {
-                val prefixResult = prefixRule(tokens);
-                return if (prefixResult.isSuccess()) then
-                    applyInfixRules(applicableInfixRules)(prefixResult)
-                else
-                    prefixResult;
-            }
-            
-        def applyInfixRules fun(applicableInfixRules: Sequence[InfixRule[T]]) =>
-            fun(leftResult: ParseResult[T]) => do {
-                val remaining = leftResult.remaining();
-                val applyInfixRule = fun(infixRule: InfixRule[T]) => infixRule.apply(remaining);
-                val infixResults = lazySequences.map(applyInfixRule, applicableInfixRules);
-                val successfulInfixResults = lazySequences.filter(fun(result: ParseResult[T]) => result.isSuccess(), infixResults);
-                return sequences.head(successfulInfixResults)
-                    .map(fun(infixResult: ParseResult[T]) =>
-                        infixResult.map(fun(infix: Any) => infix(leftResult.value()))
-                    )
-                    .map(fun(result: ParseResult[T]) => applyInfixRules(applicableInfixRules)(result))
-                    .valueOrElse(fun() => leftResult);
-            };
-                
-            
-        def infixRulesUntilInclusive fun(name: String) =>
-            remainingInfixRulesUntil(name, infixRules.toSequence(), true)
-            
-        def infixRulesUntilExclusive fun(name: String) =>
-            remainingInfixRulesUntil(name, infixRules.toSequence(), false)
-        
-        def remainingInfixRulesUntil fun(name: String, remainingRules: Sequence[InfixRule[T]], inclusive: Boolean) =>
-            sequences.head(remainingRules)
-                .map(fun(rule: InfixRule[T]) =>
-                    if equal(rule.name(), name) then
-                        if inclusive then
-                            sequences.singleton(rule)
-                        else
-                            sequences.nil
-                    else
-                        sequences.cons(rule, remainingInfixRulesUntil(name, remainingRules.tail()))
-                )
-                .valueOrElse(sequences.nil)
+        leftAssociative,
+        rightAssociative,
+        rule
     }
     
-    def InfixRule class[T] => (name: String, rule: Rule[T]) => {
-        members {
-            apply rule,
-            name fun() => name
+    val prefixRule = rules.firstOf(name, prefixRules);
+    
+    def leftAssociative fun(name: String) =>
+        applyRules(infixRulesUntilExclusive(name))
+        
+    def rightAssociative fun(name: String) =>
+        applyRules(infixRulesUntilInclusive(name))
+    
+    def rule fun() =>
+        applyRules(infixRules.toSequence())
+        
+    def applyRules fun(applicableInfixRules: Sequence[InfixRule[T]]) =>
+        fun(tokens: Sequence[Token]) => do {
+            val prefixResult = prefixRule(tokens);
+            return if (prefixResult.isSuccess()) then
+                applyInfixRules(applicableInfixRules)(prefixResult)
+            else
+                prefixResult;
         }
+        
+    def applyInfixRules fun(applicableInfixRules: Sequence[InfixRule[T]]) =>
+        fun(leftResult: ParseResult[T]) => do {
+            val remaining = leftResult.remaining();
+            val applyInfixRule = fun(infixRule: InfixRule[T]) => infixRule.apply(remaining);
+            val infixResults = lazySequences.map(applyInfixRule, applicableInfixRules);
+            val successfulInfixResults = lazySequences.filter(fun(result: ParseResult[T]) => result.isSuccess(), infixResults);
+            return sequences.head(successfulInfixResults)
+                .map(fun(infixResult: ParseResult[T]) =>
+                    infixResult.map(fun(infix: Any) => infix(leftResult.value()))
+                )
+                .map(fun(result: ParseResult[T]) => applyInfixRules(applicableInfixRules)(result))
+                .valueOrElse(fun() => leftResult);
+        };
+            
+        
+    def infixRulesUntilInclusive fun(name: String) =>
+        remainingInfixRulesUntil(name, infixRules.toSequence(), true)
+        
+    def infixRulesUntilExclusive fun(name: String) =>
+        remainingInfixRulesUntil(name, infixRules.toSequence(), false)
+    
+    def remainingInfixRulesUntil fun(name: String, remainingRules: Sequence[InfixRule[T]], inclusive: Boolean) =>
+        sequences.head(remainingRules)
+            .map(fun(rule: InfixRule[T]) =>
+                if equal(rule.name(), name) then
+                    if inclusive then
+                        sequences.singleton(rule)
+                    else
+                        sequences.nil
+                else
+                    sequences.cons(rule, remainingInfixRulesUntil(name, remainingRules.tail()))
+            )
+            .valueOrElse(sequences.nil)
+}
+
+def InfixRule class[T] => (name: String, rule: Rule[T]) => {
+    members {
+        apply rule,
+        name fun() => name
     }
-};
+}
