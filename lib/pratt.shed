@@ -33,7 +33,6 @@ def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: Li
         fun(tokens: Sequence[Token]) =>
             prefixRule(tokens).bindWithRemaining(applyInfixRules(applicableInfixRules))
     
-    // TODO: handle fatal failures
     def applyInfixRules fun(applicableInfixRules: Sequence[InfixRule[T]]) =>
         fun(left: T, remaining: Sequence[Token]) => do {
             val applyInfixRule = fun(infixRule: InfixRule[T]) => infixRule.apply(remaining);
