@@ -7,7 +7,8 @@ members {
     map,
     sequence,
     zeroOrMore,
-    zeroOrMoreWithSeparator
+    zeroOrMoreWithSeparator,
+    optional
 }
 
 import lazySequenceables;
@@ -16,6 +17,7 @@ import lazySequences;
 import sequences;
 import lists;
 import tuples;
+import options;
 
 import lop.token.Token;
 import lop.results.ParseResult;
@@ -193,3 +195,12 @@ def zeroOrMore2 fun[T] => (rule: Rule[T]) =>
     
 def failureToSuccess fun[T] => (result: ParseResult[T], success: Success[T]) =>
     if result.isFailure() then success else result
+
+def optional fun[T] => (rule: Rule[T]) =>
+    fun(tokens: Sequence[Token]) => do {
+        val result = rule(tokens);
+        return if result.isFailure() then
+            results.success(options.none, tokens)
+        else
+            result.map(options.some);
+    }

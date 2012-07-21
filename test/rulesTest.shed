@@ -7,6 +7,7 @@ members {
 import sequences;
 import strings;
 import lazySequences;
+import options;
 
 import hat.TestCase;
 import duck.assertThat;
@@ -372,6 +373,30 @@ val testCases = listOf[TestCase](
                 Token("identifier", "go", source("go")),
                 Token("symbol", ",", source(","))
             ),
+            Error("<expected>", "<actual>")
+        )
+    ),
+    
+    TestCase("optional parses empty string to none", fun() =>
+        assertSuccessfulParse(
+            rules.optional(rules.tokenOfType("identifier")),
+            emptyList,
+            equalTo(options.none)
+        )
+    ),
+    
+    TestCase("optional parses rule if possible", fun() =>
+        assertSuccessfulParse(
+            rules.optional(rules.tokenOfType("identifier")),
+            listOf(Token("identifier", "blah", source("blah"))),
+            equalTo(options.some("blah"))
+        )
+    ),
+    
+    TestCase("optional is fatal if sub-rule is fatal", fun() =>
+        assertErrorParseWithError(
+            rules.optional(fatalRule),
+            listOf(Token("identifier", "blah", source("blah"))),
             Error("<expected>", "<actual>")
         )
     )
