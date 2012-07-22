@@ -187,6 +187,8 @@ def zeroOrMore2 fun[T] => (rule: Rule[T]) =>
             val remainingResult = zeroOrMore2(rule)(result.remaining());
             return if remainingResult.isSuccess() then
                 results.success(sequences.cons(result.value(), remainingResult.value()), remainingResult.remaining())
+            else if remainingResult.isFatal() then
+                remainingResult
             else
                 result.map(sequences.singleton);
         } else

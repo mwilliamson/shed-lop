@@ -299,6 +299,19 @@ val testCases = listOf[TestCase](
         )
     ),
     
+    TestCase("zeroOrMore fails fatally if second match fails fatally", fun() =>
+        assertErrorParseWithError(
+            rules.zeroOrMore(
+                rules.sequence().cut().capture(rules.tokenOfType("identifier")).head()
+            ),
+            listOf(
+                Token("identifier", "go", source("go")),
+                Token("symbol", ",", source(","))
+            ),
+            Error("identifier", "symbol \",\"")
+        )
+    ),
+    
     TestCase("zeroOrMoreWithSeparator can match no values", fun() =>
         assertSuccessfulParse(
             rules.zeroOrMoreWithSeparator(rules.tokenOfType("identifier"), rules.token("symbol", ",")),
