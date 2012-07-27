@@ -7,13 +7,17 @@ members {
 // TODO: since we have the notion of an error being a result, we should
 // rename this to be Description (of a failure/error) or somesuch
 
-def Error class(myExpected: String, myActual: String) => {
-    public def expected fun() => myExpected;
-    public def actual fun() => myActual;
+def Error class(expected: String, actual: String) => {
+    members {
+        expected fun() => expected,
+        actual fun() => actual,
+        equals,
+        represent
+    }
     
-    public def equals fun(other: Error) =>
-        and(myExpected.equals(other.expected()), myActual.equals(other.actual()));
+    def equals fun(other: Error) =>
+        and(expected.equals(other.expected()), actual.equals(other.actual()));
         
-    public def represent fun() =>
-        "expected ".concat(expected()).concat(" but got ").concat(actual());
+    def represent fun() =>
+        "expected ".concat(expected).concat(" but got ").concat(actual);
 };

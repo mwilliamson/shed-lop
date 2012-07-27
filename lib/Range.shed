@@ -5,10 +5,13 @@ members {
 }
 
 def Range class(myStart: Double, myEnd: Double) => {
-    public def start fun() => myStart;
-    public def end fun() => myEnd;
+    members {
+        start fun() => myStart,
+        end fun() => myEnd,
+        equals
+    }
     
-    public def equals fun(other: Range) => and(
+    def equals fun(other: Range) => and(
         start().equals(other.start()),
         end().equals(other.end())
     )

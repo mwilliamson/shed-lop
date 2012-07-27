@@ -154,7 +154,7 @@ def SequenceRule class[T1, T2, Tn] => (
 }
     
 val emptySequenceRule = SequenceRule(
-    noOpRule, noOpRule, fun(_: Any, _: Any) => tuple(), false, false);
+    noOpRule, noOpRule, fun(_: Any, _2: Any) => tuple(), false, false);
     
 def zeroOrMoreWithSeparator fun[T] => (rule: Rule[T], separator: Rule[Any]) =>
     map(zeroOrMoreWithSeparator2(rule, separator), lists.sequenceToList)
