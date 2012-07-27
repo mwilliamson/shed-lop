@@ -10,27 +10,21 @@ import lop.range.Range;
 
 def StringSource class(string: String, myDescription: String, myRange: Range) => {
     members {
-        asString,
-        description,
-        indexRange,
-        range,
-        sliceFrom,
-        struct
+        asString fun() => string.substring(myRange.start(), myRange.end()),
+        description fun() => myDescription,
+        indexRange fun() => myRange,
+        
+        range fun(rangeStart: Double, rangeEnd: Double) =>
+            StringSource(
+                string,
+                myDescription,
+                Range(myRange.start().add(rangeStart), myRange.start().add(rangeEnd))
+            ),
+            
+        sliceFrom fun(index: Double) =>
+            StringSource(string, myDescription, Range(myRange.start().add(index), myRange.end())),
+            
+        struct fun() =>
+            structs.create(StringSource, listOf(string, myDescription, myRange))
     }
-    
-    def asString fun() => string.substring(myRange.start(), myRange.end());
-    def description fun() => myDescription;
-    def indexRange fun() => myRange;
-    
-    def range fun(rangeStart: Double, rangeEnd: Double) =>
-        StringSource(
-            string,
-            description(),
-            Range(myRange.start().add(rangeStart), myRange.start().add(rangeEnd))
-        );
-    
-    def sliceFrom fun(index: Double) =>
-        StringSource(string, description(), Range(myRange.start().add(index), myRange.end()));
-    
-    def struct fun() => structs.create(StringSource, listOf(string, myDescription, myRange))
 };

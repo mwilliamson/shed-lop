@@ -21,45 +21,28 @@ def fatal fun(error: Error) =>
 
 def Failure class(error: Error, isFatal: Boolean) => {
     members {
-        map,
-        bindWithRemaining,
+        map fun[R] => () => Failure(error, isFatal),
+        bindWithRemaining fun[R] => (func: Function[Nothing, Sequence[Token], ParseResult[R]]) =>
+            Failure(error, isFatal),
         isSuccess fun() => false,
         isFailure fun() => not(isFatal),
         isFatal fun() => isFatal,
         error fun() => error,
         struct fun() => structs.create(Failure, listOf(error, isFatal))
     }
-    
-    def map fun[R] => () => Failure(error, isFatal);
-    
-    def bindWithRemaining fun[R] => (func: Function[Nothing, Sequence[Token], ParseResult[R]]) =>
-        Failure(error, isFatal);
 }
 
 def Success class[T] => (myValue: T, myRemaining: Sequence[Token]) => {
     members {
-        value,
-        remaining,
-        map,
-        bindWithRemaining,
-        isSuccess,
-        isFailure,
-        isFatal,
-        struct
+        value fun() => myValue,
+        remaining fun() => myRemaining,
+        map fun[R] => (func: Function[T, R]) =>
+            Success[R](func(myValue), myRemaining),
+        bindWithRemaining fun[R] => (func: Function[T, Sequence[Token], ParseResult[R]]) =>
+            func(myValue, myRemaining),
+        isSuccess fun() => true,
+        isFailure fun() => false,
+        isFatal fun() => false,
+        struct fun() => structs.create(Success, listOf(myValue, myRemaining))
     }
-    
-    def value fun() => myValue;
-    def remaining fun() => myRemaining;
-    
-    def map fun[R] => (func: Function[T, R]) =>
-        Success[R](func(myValue), myRemaining);
-        
-    def bindWithRemaining fun[R] => (func: Function[T, Sequence[Token], ParseResult[R]]) =>
-        func(myValue, myRemaining);
-        
-    def isSuccess fun() => true;
-    def isFailure fun() => false;
-    def isFatal fun() => false;
-    
-    def struct fun() => structs.create(Success, listOf(myValue, myRemaining));
 }

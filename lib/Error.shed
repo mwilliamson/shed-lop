@@ -11,13 +11,9 @@ def Error class(expected: String, actual: String) => {
     members {
         expected fun() => expected,
         actual fun() => actual,
-        equals,
-        represent
+        equals fun(other: Error) =>
+            and(expected.equals(other.expected()), actual.equals(other.actual())),
+        represent fun() =>
+            "expected ".concat(expected).concat(" but got ").concat(actual)
     }
-    
-    def equals fun(other: Error) =>
-        and(expected.equals(other.expected()), actual.equals(other.actual()));
-        
-    def represent fun() =>
-        "expected ".concat(expected).concat(" but got ").concat(actual);
 };
