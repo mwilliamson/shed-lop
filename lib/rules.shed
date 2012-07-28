@@ -125,7 +125,7 @@ def SequenceRule class[T1, T2, Tn] => (
         append(
             rule,
             fun(previousValues: Tuple[T1, T2, Tn], nextValue: U) =>
-                previousValues.append(nextValue)
+                previousValues.appendDestructive(nextValue)
         )
         
     def append fun[U] => (rule: Rule[U], func: Function[Tuple[T1, T2, Tn], U]) =>
