@@ -8,9 +8,8 @@ def Range class(myStart: Double, myEnd: Double) => {
     members {
         start fun() => myStart,
         end fun() => myEnd,
-        equals fun(other: Range) => and(
-            myStart.equals(other.start()),
-            myEnd.equals(other.end())
-        )
+        
+        equals fun(other: Range) =>
+            myStart.equals(other.start()) && myEnd.equals(other.end())
     }
 }
