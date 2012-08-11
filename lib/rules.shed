@@ -159,14 +159,14 @@ val emptySequenceRule = SequenceRule(
 def zeroOrMoreWithSeparator fun[T] => (rule: Rule[T], separator: Rule[Any]) =>
     map(zeroOrMoreWithSeparator2(rule, separator), lists.sequenceToList)
     
-def zeroOrMoreWithSeparator2 fun[T] => (rule: Rule[T], separator: Rule[Any]) =>
-    fun(tokens: Sequence[Token]) => do {
+def zeroOrMoreWithSeparator2 fun[T] => (rule: Rule[T], separator: Rule[Any]) => do {
+    val separatorAndRule = map(
+        sequence().next(separator).capture(rule).tuple(),
+        tuples.head
+    );
+    return fun(tokens: Sequence[Token]) => do {
         val result = rule(tokens);
         return if result.isSuccess() then do {
-            val separatorAndRule = map(
-                sequence().next(separator).capture(rule).tuple(),
-                tuples.head
-            );
             val remainingRule = zeroOrMore2(separatorAndRule);
             val remainingResult = remainingRule(result.remaining());
             
@@ -175,7 +175,8 @@ def zeroOrMoreWithSeparator2 fun[T] => (rule: Rule[T], separator: Rule[Any]) =>
             );
         } else
             failureToSuccess(result, results.success(sequences.nil, tokens));
-    }
+    };
+}
     
 def zeroOrMore fun[T] => (rule: Rule[T]) =>
     map(zeroOrMore2(rule), lists.sequenceToList)
