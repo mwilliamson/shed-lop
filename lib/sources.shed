@@ -1,7 +1,5 @@
 module lop.sources;
 
-// TODO: move file to sources.shed
-
 members {
     StringSource,
     tryGetSource,
