@@ -15,7 +15,7 @@ def Error class(expected: String, actual: String) => {
         equals fun(other: Error) =>
             expected.equals(other.expected()) && actual.equals(other.actual()),
             
-        represent fun() =>
+        _represent fun() =>
             "expected ".concat(expected).concat(" but got ").concat(actual)
     }
 };
