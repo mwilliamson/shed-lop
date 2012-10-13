@@ -1,16 +1,22 @@
 module lop.sources;
 
+// TODO: move file to sources.shed
+
 members {
-    StringSource
+    StringSource,
+    tryGetSource,
+    setSource
 }
 
 import structs;
+import meta;
 
 import lop.range.Range;
 
 def StringSource class(string: String, myDescription: String, myRange: Range) => {
     members {
         asString fun() => string.substring(myRange.start(), myRange.end()),
+        originalString fun() => string,
         description fun() => myDescription,
         indexRange fun() => myRange,
         
@@ -28,3 +34,11 @@ def StringSource class(string: String, myDescription: String, myRange: Range) =>
             structs.create(StringSource, listOf(string, myDescription, myRange))
     }
 };
+
+val sourceKey = meta.createKey(StringSource, "source");
+
+def tryGetSource fun(value: Any) =>
+    meta.tryGet(value, sourceKey)
+
+def setSource fun(value: Any, source: StringSource) =>
+    meta.set(value, sourceKey, source)

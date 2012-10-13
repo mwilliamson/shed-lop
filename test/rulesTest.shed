@@ -25,6 +25,7 @@ import lop.testing.isSuccess;
 import lop.testing.isFailure;
 import lop.testing.isFailureWithError;
 import lop.testing.isErrorWithError;
+import lop.testing.hasSource;
 import lop.error.Error;
 import lop.results.Failure;
 
@@ -412,6 +413,17 @@ val testCases = listOf[TestCase](
             listOf(Token("identifier", "blah", source("blah"))),
             Error("<expected>", "<actual>")
         )
+    ),
+    
+    TestCase("addSource allows source to be stored on parsed value", fun() => let
+        val input = source("-x")
+        val tokens = listOf(
+            Token("symbol", "-", input.range(0, 1)),
+            Token("identifier", "x", input.range(1, 2))
+        )
+        val rule = rules.addSource(rules.tokenOfType("symbol"))
+        val result = rule(tokens.toSequence())
+        in assertThat(result.value(), hasSource(input.range(0, 1)))
     )
 );
 

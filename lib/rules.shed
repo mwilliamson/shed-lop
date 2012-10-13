@@ -8,7 +8,8 @@ members {
     sequence,
     zeroOrMore,
     zeroOrMoreWithSeparator,
-    optional
+    optional,
+    addSource
 }
 
 import lazySequenceables;
@@ -18,12 +19,15 @@ import sequences;
 import lists;
 import tuples;
 import options;
+import meta;
 
 import lop.token.Token;
 import lop.results.ParseResult;
 import lop.results.Success;
 import lop.results.Failure;
 import lop.error.Error;
+import lop.sources;
+import lop.range.Range;
 
 val results = object {
     members {
@@ -207,3 +211,25 @@ def optional fun[T] => (rule: Rule[T]) =>
         else
             result.map(options.some);
     }
+
+def addSource fun[T] => (rule: Rule[T]) =>
+    let val createSource = fun(from: Token, to: Token) => let
+        // Assumes that the underlying source is consistent
+        // TODO: will include trailing whitespace
+        val fromSource = from.source()
+        val toSource = to.source()
+        in sources.StringSource(
+            fromSource.originalString(),
+            fromSource.description(),
+            Range(
+                fromSource.indexRange().start(),
+                toSource.indexRange().start()
+            )
+        )
+    in fun(tokens: Sequence[Token]) =>
+        // TODO: handle end of input
+        rule(tokens).bindWithRemaining(fun(value: T, remaining: Sequence[Token]) => let
+            val source = createSource(tokens.head(), remaining.head())
+            val valueWithSource = sources.setSource(value, source)
+            in results.success(valueWithSource, remaining)
+        )

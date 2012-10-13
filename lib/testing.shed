@@ -4,7 +4,8 @@ members {
     isFailure,
     isFailureWithError,
     isErrorWithError,
-    isSuccess
+    isSuccess,
+    hasSource
 }
 
 import sequences;
@@ -16,6 +17,7 @@ import duck;
 
 import lop.token.Token;
 import lop.results.Failure;
+import lop.sources;
 
 val isFailure = object {
     members {
@@ -95,4 +97,26 @@ def isSuccess fun[T] => (matcher: Matcher[T]) => object {
                 MatchResult(true, "")
         else
             MatchResult(false, "was not success, was ".concat(represent(result)))
+}
+
+def hasSource fun(expectedSource: StringSource) => object {
+    members {
+        describeSelf,
+        matches,
+        describeMismatch,
+        matchesWithDescription
+    }
+    
+    def describeSelf fun() => "hasSource(".concat(represent(expectedSource)).concat(")");
+    
+    def matches fun(value: Any) =>
+        matchesWithDescription(value).matches();
+    
+    def describeMismatch fun(value: Any) =>
+        matchesWithDescription(value).mismatchDescription();
+        
+    def matchesWithDescription fun(value: Any) =>
+        sources.tryGetSource(value)
+            .map(duck.equalTo(expectedSource).matchesWithDescription)
+            .valueOrElse(fun() => MatchResult(false, "value had no source"))
 }

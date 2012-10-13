@@ -4,12 +4,13 @@ members {
     Range
 }
 
+import structs;
+
 def Range class(myStart: Double, myEnd: Double) => {
     members {
         start fun() => myStart,
         end fun() => myEnd,
         
-        equals fun(other: Range) =>
-            myStart.equals(other.start()) && myEnd.equals(other.end())
+        struct fun() => structs.create(Range, listOf(myStart, myEnd))
     }
 }
