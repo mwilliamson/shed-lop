@@ -20,6 +20,7 @@ import lop.rules;
 import lop.results;
 import lop.token.Token;
 import lop.sources.StringSource;
+import lop.sources.noSource;
 import lop.strings.createStringSource;
 import lop.testing.isSuccess;
 import lop.testing.isFailure;
@@ -35,7 +36,7 @@ val testCases = listOf[TestCase](
         assertIsFailureWithMessage[String](
             rules.token("identifier", "true"),
             emptyList,
-            unexpectedInputError("token", "end of token sequence")
+            unexpectedInputError("token", "end of token sequence", noSource)
         )
     ),
     
@@ -43,7 +44,7 @@ val testCases = listOf[TestCase](
         assertIsFailureWithMessage[String](
             rules.token("identifier", "true"),
             listOf(Token("keyword", "true", source("true"))),
-            unexpectedInputError("identifier \"true\"", "keyword \"true\"")
+            unexpectedInputError("identifier \"true\"", "keyword \"true\"", noSource)
         )
     ),
     
@@ -51,7 +52,7 @@ val testCases = listOf[TestCase](
         assertIsFailureWithMessage[String](
             rules.token("identifier", "true"),
             listOf(Token("identifier", "false", source("false"))),
-            unexpectedInputError("identifier \"true\"", "identifier \"false\"")
+            unexpectedInputError("identifier \"true\"", "identifier \"false\"", noSource)
         )
     ),
     
@@ -67,7 +68,7 @@ val testCases = listOf[TestCase](
         assertIsFailureWithMessage[String](
             rules.tokenOfType("identifier"),
             listOf(Token("keyword", "true", source("true"))),
-            unexpectedInputError("identifier", "keyword \"true\"")
+            unexpectedInputError("identifier", "keyword \"true\"", noSource)
         )
     ),
     
@@ -106,7 +107,7 @@ val testCases = listOf[TestCase](
                 rules.token("keyword", "false")
             )),
             listOf(Token("identifier", "blah", source("blah"))),
-            unexpectedInputError("literal", "identifier \"blah\"")
+            unexpectedInputError("literal", "identifier \"blah\"", noSource)
         )
     ),
     
@@ -118,7 +119,7 @@ val testCases = listOf[TestCase](
                 rules.token("keyword", "unit")
             )),
             listOf(Token("keyword", "false", source("false"))),
-            unexpectedInputError("<expected>", "<actual>")
+            unexpectedInputError("<expected>", "<actual>", noSource)
         )
     ),
     
@@ -126,7 +127,7 @@ val testCases = listOf[TestCase](
         assertIsFailureWithMessage[String](
             rules.map[Unit, Unit](failingRule),
             emptyList,
-            unexpectedInputError("<expected>", "<actual>")
+            unexpectedInputError("<expected>", "<actual>", noSource)
         )
     ),
     
@@ -149,7 +150,7 @@ val testCases = listOf[TestCase](
                 .next(rules.token("keyword", "then"))
                 .tuple(),
             listOf(Token("keyword", "if", source("if")), Token("keyword", "then", source("then"))),
-            unexpectedInputError("identifier", "keyword \"then\"")
+            unexpectedInputError("identifier", "keyword \"then\"", noSource)
         )
     ),
     
@@ -263,7 +264,7 @@ val testCases = listOf[TestCase](
                 .next(rules.tokenOfType("identifier"))
                 .tuple(),
             listOf(Token("keyword", "if", source("if")), Token("keyword", "then", source("then"))),
-            unexpectedInputError("identifier", "keyword \"then\"")
+            unexpectedInputError("identifier", "keyword \"then\"", noSource)
         )
     ),
     
@@ -275,7 +276,7 @@ val testCases = listOf[TestCase](
                 .next(rules.tokenOfType("identifier"))
                 .tuple(),
             listOf(Token("keyword", "then", source("then"))),
-            unexpectedInputError("keyword \"if\"", "keyword \"then\"")
+            unexpectedInputError("keyword \"if\"", "keyword \"then\"", noSource)
         )
     ),
     
@@ -308,7 +309,7 @@ val testCases = listOf[TestCase](
                 Token("identifier", "go", source("go")),
                 Token("symbol", ",", source(","))
             ),
-            unexpectedInputError("identifier", "symbol \",\"")
+            unexpectedInputError("identifier", "symbol \",\"", noSource)
         )
     ),
     
@@ -360,7 +361,7 @@ val testCases = listOf[TestCase](
         assertIsFatalWithMessage(
             rules.zeroOrMoreWithSeparator(fatalRule, rules.token("symbol", ",")),
             emptyList,
-            unexpectedInputError("<expected>", "<actual>")
+            unexpectedInputError("<expected>", "<actual>", noSource)
         )
     ),
     
@@ -375,7 +376,7 @@ val testCases = listOf[TestCase](
                 Token("symbol", ",", source(",")),
                 Token("symbol", ",", source(","))
             ),
-            unexpectedInputError("identifier", "symbol \",\"")
+            unexpectedInputError("identifier", "symbol \",\"", noSource)
         )
     ),
     
@@ -386,7 +387,7 @@ val testCases = listOf[TestCase](
                 Token("identifier", "go", source("go")),
                 Token("symbol", ",", source(","))
             ),
-            unexpectedInputError("<expected>", "<actual>")
+            unexpectedInputError("<expected>", "<actual>", noSource)
         )
     ),
     
@@ -410,7 +411,7 @@ val testCases = listOf[TestCase](
         assertIsFatalWithMessage(
             rules.optional(fatalRule),
             listOf(Token("identifier", "blah", source("blah"))),
-            unexpectedInputError("<expected>", "<actual>")
+            unexpectedInputError("<expected>", "<actual>", noSource)
         )
     ),
     
@@ -427,10 +428,10 @@ val testCases = listOf[TestCase](
 );
 
 def failingRule fun(tokens: Sequence[Token]) =>
-    results.failure(unexpectedInputError("<expected>", "<actual>"));
+    results.failure(unexpectedInputError("<expected>", "<actual>", noSource));
 
 def fatalRule fun(tokens: Sequence[Token]) =>
-    results.fatal(unexpectedInputError("<expected>", "<actual>"));
+    results.fatal(unexpectedInputError("<expected>", "<actual>", noSource));
 
 def stringSource fun(string: String) =>
     createStringSource(string, "raw string");

@@ -20,6 +20,7 @@ import lop.rules;
 import lop.token.Token;
 import lop.messages.unexpectedInputError;
 import lop.results;
+import lop.sources.noSource;
 
 import lop.testing.isSuccess;
 import lop.testing.isFatalWithMessage;
@@ -153,13 +154,13 @@ val testCases = listOf(
                 listOf(pratt.infix("power", fatalRule))
             ).rule(),
             listOf(Token("identifier", "blah")),
-            unexpectedInputError("<expected>", "<actual>")
+            unexpectedInputError("<expected>", "<actual>", noSource)
         )
     )
 );
 
 def fatalRule fun(tokens: Sequence[Token]) =>
-    results.fatal(unexpectedInputError("<expected>", "<actual>"));
+    results.fatal(unexpectedInputError("<expected>", "<actual>", noSource));
 
 def stringSource fun(string: String) =>
     createStringSource(string, "raw string");

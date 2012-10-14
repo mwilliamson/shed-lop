@@ -26,6 +26,7 @@ import lop.results.ParseResult;
 import lop.results;
 import lop.messages.unexpectedInputError;
 import lop.sources;
+import lop.sources.noSource;
 import lop.range.Range;
 
 // TODO: should be type Rule[T] = Fun(Sequence[Token]) => ParseResult[T]
@@ -43,7 +44,7 @@ def firstOf fun(name: String, rules: List[Rule]) =>
         );
         return sequenceables.head(stops)
             .valueOrElse[ParseResult](fun() => withNextToken(tokens, fun(token: Token) =>
-                results.failure(unexpectedInputError(name, describeToken(token)))
+                results.failure(unexpectedInputError(name, describeToken(token), noSource))
             ));
     }
     
@@ -54,7 +55,7 @@ def tokenOfType fun(name: String) =>
                 // TODO: should have function to get an option of both head and tail at the same time
                 return results.success(token.value(), tokens.tail());
             } else
-                results.failure(unexpectedInputError(name, describeToken(token)))
+                results.failure(unexpectedInputError(name, describeToken(token), noSource))
         )
 
 def token fun(name: String, value: String) =>
@@ -63,7 +64,11 @@ def token fun(name: String, value: String) =>
             if token.name().equals(name) && token.value().equals(value) then
                 results.success(token.value(), tokens.tail())
             else
-                results.failure(unexpectedInputError(describeTokenNameAndValue(name, value), describeToken(token)))
+                results.failure(unexpectedInputError(
+                    describeTokenNameAndValue(name, value, noSource),
+                    describeToken(token),
+                    noSource
+                ))
         )
         
 def describeToken fun(token: Token) =>
@@ -75,7 +80,7 @@ def describeTokenNameAndValue fun(name: String, value: String) =>
 def withNextToken fun(tokens: Sequence[Token], func: Function[Token, ParseResult[String]]) =>
     sequences.head[Token](tokens)
         .map[Token, ParseResult[String]](func)
-        .valueOrElse[ParseResult](fun() => results.failure(unexpectedInputError("token", "end of token sequence")))
+        .valueOrElse[ParseResult](fun() => results.failure(unexpectedInputError("token", "end of token sequence", noSource)))
         
 def map fun[F, T] => (rule: Rule, func: Function[F, T]) =>
     fun(tokens: Sequence[Token]) =>

@@ -4,13 +4,16 @@ members {
     unexpectedInputError UnexpectedInputError
 }
 
-def UnexpectedInputError class(expected: String, actual: String) => {
+import structs;
+
+def UnexpectedInputError class(expected: String, actual: String, location: StringSource) => {
     members {
         expected fun() => expected,
         actual fun() => actual,
+        location fun() => location,
         
-        equals fun(other: UnexpectedInputError) =>
-            expected.equals(other.expected()) && actual.equals(other.actual()),
+        struct fun() =>
+            structs.create(UnexpectedInputError, listOf(expected, actual, location))
             
         _represent fun() =>
             "expected ".concat(expected).concat(" but got ").concat(actual)
