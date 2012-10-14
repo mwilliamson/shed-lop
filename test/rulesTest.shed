@@ -17,7 +17,7 @@ import duck.anything;
 import duck.MatchResult;
 
 import lop.rules;
-import lop.results.Success;
+import lop.results;
 import lop.token.Token;
 import lop.sources.StringSource;
 import lop.strings.createStringSource;
@@ -26,8 +26,7 @@ import lop.testing.isFailure;
 import lop.testing.isFailureWithError;
 import lop.testing.isErrorWithError;
 import lop.testing.hasSource;
-import lop.error.Error;
-import lop.results.Failure;
+import lop.messages.unexpectedInputError;
 
 def source fun(value: String) => createStringSource(value, "raw string");
 
@@ -36,7 +35,7 @@ val testCases = listOf[TestCase](
         assertFailedParseWithError[String](
             rules.token("identifier", "true"),
             emptyList,
-            Error("token", "end of token sequence")
+            unexpectedInputError("token", "end of token sequence")
         )
     ),
     
@@ -44,7 +43,7 @@ val testCases = listOf[TestCase](
         assertFailedParseWithError[String](
             rules.token("identifier", "true"),
             listOf(Token("keyword", "true", source("true"))),
-            Error("identifier \"true\"", "keyword \"true\"")
+            unexpectedInputError("identifier \"true\"", "keyword \"true\"")
         )
     ),
     
@@ -52,7 +51,7 @@ val testCases = listOf[TestCase](
         assertFailedParseWithError[String](
             rules.token("identifier", "true"),
             listOf(Token("identifier", "false", source("false"))),
-            Error("identifier \"true\"", "identifier \"false\"")
+            unexpectedInputError("identifier \"true\"", "identifier \"false\"")
         )
     ),
     
@@ -68,7 +67,7 @@ val testCases = listOf[TestCase](
         assertFailedParseWithError[String](
             rules.tokenOfType("identifier"),
             listOf(Token("keyword", "true", source("true"))),
-            Error("identifier", "keyword \"true\"")
+            unexpectedInputError("identifier", "keyword \"true\"")
         )
     ),
     
@@ -107,7 +106,7 @@ val testCases = listOf[TestCase](
                 rules.token("keyword", "false")
             )),
             listOf(Token("identifier", "blah", source("blah"))),
-            Error("literal", "identifier \"blah\"")
+            unexpectedInputError("literal", "identifier \"blah\"")
         )
     ),
     
@@ -119,7 +118,7 @@ val testCases = listOf[TestCase](
                 rules.token("keyword", "unit")
             )),
             listOf(Token("keyword", "false", source("false"))),
-            Error("<expected>", "<actual>")
+            unexpectedInputError("<expected>", "<actual>")
         )
     ),
     
@@ -127,7 +126,7 @@ val testCases = listOf[TestCase](
         assertFailedParseWithError[String](
             rules.map[Unit, Unit](failingRule),
             emptyList,
-            Error("<expected>", "<actual>")
+            unexpectedInputError("<expected>", "<actual>")
         )
     ),
     
@@ -150,7 +149,7 @@ val testCases = listOf[TestCase](
                 .next(rules.token("keyword", "then"))
                 .tuple(),
             listOf(Token("keyword", "if", source("if")), Token("keyword", "then", source("then"))),
-            Error("identifier", "keyword \"then\"")
+            unexpectedInputError("identifier", "keyword \"then\"")
         )
     ),
     
@@ -264,7 +263,7 @@ val testCases = listOf[TestCase](
                 .next(rules.tokenOfType("identifier"))
                 .tuple(),
             listOf(Token("keyword", "if", source("if")), Token("keyword", "then", source("then"))),
-            Error("identifier", "keyword \"then\"")
+            unexpectedInputError("identifier", "keyword \"then\"")
         )
     ),
     
@@ -276,7 +275,7 @@ val testCases = listOf[TestCase](
                 .next(rules.tokenOfType("identifier"))
                 .tuple(),
             listOf(Token("keyword", "then", source("then"))),
-            Error("keyword \"if\"", "keyword \"then\"")
+            unexpectedInputError("keyword \"if\"", "keyword \"then\"")
         )
     ),
     
@@ -309,7 +308,7 @@ val testCases = listOf[TestCase](
                 Token("identifier", "go", source("go")),
                 Token("symbol", ",", source(","))
             ),
-            Error("identifier", "symbol \",\"")
+            unexpectedInputError("identifier", "symbol \",\"")
         )
     ),
     
@@ -361,7 +360,7 @@ val testCases = listOf[TestCase](
         assertErrorParseWithError(
             rules.zeroOrMoreWithSeparator(fatalRule, rules.token("symbol", ",")),
             emptyList,
-            Error("<expected>", "<actual>")
+            unexpectedInputError("<expected>", "<actual>")
         )
     ),
     
@@ -376,7 +375,7 @@ val testCases = listOf[TestCase](
                 Token("symbol", ",", source(",")),
                 Token("symbol", ",", source(","))
             ),
-            Error("identifier", "symbol \",\"")
+            unexpectedInputError("identifier", "symbol \",\"")
         )
     ),
     
@@ -387,7 +386,7 @@ val testCases = listOf[TestCase](
                 Token("identifier", "go", source("go")),
                 Token("symbol", ",", source(","))
             ),
-            Error("<expected>", "<actual>")
+            unexpectedInputError("<expected>", "<actual>")
         )
     ),
     
@@ -411,7 +410,7 @@ val testCases = listOf[TestCase](
         assertErrorParseWithError(
             rules.optional(fatalRule),
             listOf(Token("identifier", "blah", source("blah"))),
-            Error("<expected>", "<actual>")
+            unexpectedInputError("<expected>", "<actual>")
         )
     ),
     
@@ -428,10 +427,10 @@ val testCases = listOf[TestCase](
 );
 
 def failingRule fun(tokens: Sequence[Token]) =>
-    Failure(Error("<expected>", "<actual>"), false);
+    results.failure(unexpectedInputError("<expected>", "<actual>"));
 
 def fatalRule fun(tokens: Sequence[Token]) =>
-    Failure(Error("<expected>", "<actual>"), true);
+    results.fatal(unexpectedInputError("<expected>", "<actual>"));
 
 def stringSource fun(string: String) =>
     createStringSource(string, "raw string");

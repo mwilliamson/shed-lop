@@ -24,7 +24,7 @@ import meta;
 import lop.token.Token;
 import lop.results.ParseResult;
 import lop.results;
-import lop.error.Error;
+import lop.messages.unexpectedInputError;
 import lop.sources;
 import lop.range.Range;
 
@@ -43,7 +43,7 @@ def firstOf fun(name: String, rules: List[Rule]) =>
         );
         return sequenceables.head(stops)
             .valueOrElse[ParseResult](fun() => withNextToken(tokens, fun(token: Token) =>
-                results.failure(Error(name, describeToken(token)))
+                results.failure(unexpectedInputError(name, describeToken(token)))
             ));
     }
     
@@ -54,7 +54,7 @@ def tokenOfType fun(name: String) =>
                 // TODO: should have function to get an option of both head and tail at the same time
                 return results.success(token.value(), tokens.tail());
             } else
-                results.failure(Error(name, describeToken(token)))
+                results.failure(unexpectedInputError(name, describeToken(token)))
         )
 
 def token fun(name: String, value: String) =>
@@ -63,7 +63,7 @@ def token fun(name: String, value: String) =>
             if token.name().equals(name) && token.value().equals(value) then
                 results.success(token.value(), tokens.tail())
             else
-                results.failure(Error(describeTokenNameAndValue(name, value), describeToken(token)))
+                results.failure(unexpectedInputError(describeTokenNameAndValue(name, value), describeToken(token)))
         )
         
 def describeToken fun(token: Token) =>
@@ -75,7 +75,7 @@ def describeTokenNameAndValue fun(name: String, value: String) =>
 def withNextToken fun(tokens: Sequence[Token], func: Function[Token, ParseResult[String]]) =>
     sequences.head[Token](tokens)
         .map[Token, ParseResult[String]](func)
-        .valueOrElse[ParseResult](fun() => results.failure(Error("token", "end of token sequence")))
+        .valueOrElse[ParseResult](fun() => results.failure(unexpectedInputError("token", "end of token sequence")))
         
 def map fun[F, T] => (rule: Rule, func: Function[F, T]) =>
     fun(tokens: Sequence[Token]) =>

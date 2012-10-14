@@ -1,18 +1,15 @@
-module lop.error;
+module lop.messages;
 
 members {
-    Error
+    unexpectedInputError UnexpectedInputError
 }
 
-// TODO: since we have the notion of an error being a result, we should
-// rename this to be Description (of a failure/error) or somesuch
-
-def Error class(expected: String, actual: String) => {
+def UnexpectedInputError class(expected: String, actual: String) => {
     members {
         expected fun() => expected,
         actual fun() => actual,
         
-        equals fun(other: Error) =>
+        equals fun(other: UnexpectedInputError) =>
             expected.equals(other.expected()) && actual.equals(other.actual()),
             
         _represent fun() =>

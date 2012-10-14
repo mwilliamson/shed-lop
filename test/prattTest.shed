@@ -18,7 +18,7 @@ import duck.MatchResult;
 import lop.pratt;
 import lop.rules;
 import lop.token.Token;
-import lop.error.Error;
+import lop.messages.unexpectedInputError;
 import lop.results;
 
 import lop.testing.isSuccess;
@@ -153,13 +153,13 @@ val testCases = listOf(
                 listOf(pratt.infix("power", fatalRule))
             ).rule(),
             listOf(Token("identifier", "blah")),
-            Error("<expected>", "<actual>")
+            unexpectedInputError("<expected>", "<actual>")
         )
     )
 );
 
 def fatalRule fun(tokens: Sequence[Token]) =>
-    results.fatal(Error("<expected>", "<actual>"));
+    results.fatal(unexpectedInputError("<expected>", "<actual>"));
 
 def stringSource fun(string: String) =>
     createStringSource(string, "raw string");
