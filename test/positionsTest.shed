@@ -30,8 +30,32 @@ val testCases = listOf(
             findLineIndex("one\ntwo\nthree", 8),
             equalTo(2)
         )
+    ),
+    
+    TestCase("start of string has character index of 0", fun() =>
+        assertThat(
+            findCharacterIndex("blah", 0),
+            equalTo(0)
+        )
+    ),
+    
+    TestCase("start of second line has character index of 0", fun() =>
+        assertThat(
+            findCharacterIndex("one\ntwo\nthree", 4),
+            equalTo(0)
+        )
+    ),
+    
+    TestCase("end of first line has character index of length of first line", fun() =>
+        assertThat(
+            findCharacterIndex("one\ntwo\nthree", 3),
+            equalTo(3)
+        )
     )
 );
 
 def findLineIndex fun(string: String, index: Double) =>
     positions.calculateStringCoordinates(string, index).lineIndex()
+
+def findCharacterIndex fun(string: String, index: Double) =>
+    positions.calculateStringCoordinates(string, index).characterIndex()

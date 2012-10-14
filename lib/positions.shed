@@ -4,21 +4,23 @@ members {
     calculateStringCoordinates
 }
 
-import options
+import options;
 
-def calculateStringCoordinates fun(string: String, index: Double) => let
-    val closestNewLine = findClosestNewLine(string, index)
-    in StringCoordinates(closestNewLine, index)
-    
-def findClosestNewLine fun(string: String, index: Double) =>
+def calculateStringCoordinates fun(string: String, index: Double) =>
     string.indexOf("\n").map(fun(newLineIndex: Double) =>
         if newLineIndex.lessThan(index) then
-            let val remainingIndex = newLineIndex.add(1)
-            in findClosestNewLine(string.sliceFrom(remainingIndex), index.subtract(remainingIndex))
-                .add(1)
+            let
+                val remainingIndex = newLineIndex.add(1)
+                val remaining = string.sliceFrom(remainingIndex)
+                val coordinatesInRemaining =
+                    calculateStringCoordinates(remaining, index.subtract(remainingIndex))
+            in StringCoordinates(
+                coordinatesInRemaining.lineIndex().add(1),
+                coordinatesInRemaining.characterIndex()
+            )
         else
-            0
-    ).valueOrElse(fun() => 0)
+            StringCoordinates(0, index)
+    ).valueOrElse(fun() => StringCoordinates(0, index))
 
 def StringCoordinates class(lineIndex: Double, characterIndex: Double) => {
     members {
