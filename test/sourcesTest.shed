@@ -19,7 +19,7 @@ val testCases = listOf(
         )
     ),
     
-    TestCase("description of string source includes description of entire string", fun() =>
+    TestCase("description of string source includes description of entire string and position", fun() =>
         assertThat(
             sources.StringSource("module blah", "File: blah.shed", Range(2, 4)).describe(),
             equalTo("File: blah.shed\nLine number: 1\nCharacter number: 3")

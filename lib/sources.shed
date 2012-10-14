@@ -11,6 +11,7 @@ import structs;
 import meta;
 
 import lop.range.Range;
+import lop.positions;
 
 def StringSource class(string: String, description: String, myRange: Range) => {
     members {
@@ -33,11 +34,10 @@ def StringSource class(string: String, description: String, myRange: Range) => {
             structs.create(StringSource, listOf(string, description, myRange)),
             
         describe fun() => let
-            val lineNumber = 1
-            val characterNumber = myRange.start().add(1)
+            val coordinates = positions.calculateStringCoordinates(string, myRange.start())
             in description
-                .concat("\nLine number: ").concat(lineNumber.toString())
-                .concat("\nCharacter number: ").concat(characterNumber.toString())
+                .concat("\nLine number: ").concat(coordinates.lineIndex().add(1).toString())
+                .concat("\nCharacter number: ").concat(coordinates.characterIndex().add(1).toString())
     }
 };
 

@@ -1,0 +1,37 @@
+module lop.positionsTest;
+
+members {
+    testCases
+}
+
+import hat.TestCase;
+import duck.assertThat;
+import duck.equalTo;
+
+import lop.positions;
+
+val testCases = listOf(
+    TestCase("start of string has line index of 0", fun() =>
+        assertThat(
+            findLineIndex("blah", 0),
+            equalTo(0)
+        )
+    ),
+    
+    TestCase("can find line index of line that isn't last", fun() =>
+        assertThat(
+            findLineIndex("one\ntwo\nthree", 4),
+            equalTo(1)
+        )
+    ),
+    
+    TestCase("can find line index using index of start of last line", fun() =>
+        assertThat(
+            findLineIndex("one\ntwo\nthree", 8),
+            equalTo(2)
+        )
+    )
+);
+
+def findLineIndex fun(string: String, index: Double) =>
+    positions.calculateStringCoordinates(string, index).lineIndex()

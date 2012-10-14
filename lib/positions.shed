@@ -1,0 +1,28 @@
+module lop.positions;
+
+members {
+    calculateStringCoordinates
+}
+
+import options
+
+def calculateStringCoordinates fun(string: String, index: Double) => let
+    val closestNewLine = findClosestNewLine(string, index)
+    in StringCoordinates(closestNewLine, index)
+    
+def findClosestNewLine fun(string: String, index: Double) =>
+    string.indexOf("\n").map(fun(newLineIndex: Double) =>
+        if newLineIndex.lessThan(index) then
+            let val remainingIndex = newLineIndex.add(1)
+            in findClosestNewLine(string.sliceFrom(remainingIndex), index.subtract(remainingIndex))
+                .add(1)
+        else
+            0
+    ).valueOrElse(fun() => 0)
+
+def StringCoordinates class(lineIndex: Double, characterIndex: Double) => {
+    members {
+        lineIndex fun() => lineIndex,
+        characterIndex fun() => characterIndex
+    }
+}

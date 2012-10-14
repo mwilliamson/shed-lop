@@ -9,4 +9,5 @@ test: build-tests
 		lop.rulesTest.testCases \
 		lop.prattTest.testCases \
 		lop.messagesTest.testCases \
-		lop.sourcesTest.testCases
+		lop.sourcesTest.testCases \
+		lop.positionsTest.testCases
