@@ -1,0 +1,26 @@
+module lop.messagesTest;
+
+members {
+    testCases
+}
+
+import hat.TestCase;
+import duck.assertThat;
+import duck.equalTo;
+
+import lop.messages;
+
+def source fun(value: String) => object {
+    members {
+        describe fun() => value
+    }
+}
+
+val testCases = listOf(
+    TestCase("UnexpectedInputError.toString includes message and location", fun() =>
+        assertThat(
+            messages.unexpectedInputError("<expected>", "<actual>", source("File: blah.shed")).toString(),
+            equalTo("expected <expected> but got <actual>\nSource: File: blah.shed")
+        )
+    )
+);

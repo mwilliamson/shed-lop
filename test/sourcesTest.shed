@@ -1,0 +1,29 @@
+module lop.sourcesTest;
+
+members {
+    testCases
+}
+
+import hat.TestCase;
+import duck.assertThat;
+import duck.equalTo;
+
+import lop.sources;
+import lop.range.Range;
+
+val testCases = listOf(
+    TestCase("noSource.describe is constant", fun() =>
+        assertThat(
+            sources.noSource.describe(),
+            equalTo("(no source)")
+        )
+    ),
+    
+    TestCase("description of string source includes description of entire string", fun() =>
+        assertThat(
+            sources.StringSource("module blah", "File: blah.shed", Range(2, 4)).describe(),
+            equalTo("File: blah.shed\nLine number: 1\nCharacter number: 3")
+        )
+    )
+);
+

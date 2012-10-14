@@ -12,25 +12,32 @@ import meta;
 
 import lop.range.Range;
 
-def StringSource class(string: String, myDescription: String, myRange: Range) => {
+def StringSource class(string: String, description: String, myRange: Range) => {
     members {
         asString fun() => string.substring(myRange.start(), myRange.end()),
         originalString fun() => string,
-        description fun() => myDescription,
+        description fun() => description,
         indexRange fun() => myRange,
         
         range fun(rangeStart: Double, rangeEnd: Double) =>
             StringSource(
                 string,
-                myDescription,
+                description,
                 Range(myRange.start().add(rangeStart), myRange.start().add(rangeEnd))
             ),
             
         sliceFrom fun(index: Double) =>
-            StringSource(string, myDescription, Range(myRange.start().add(index), myRange.end())),
+            StringSource(string, description, Range(myRange.start().add(index), myRange.end())),
             
         struct fun() =>
-            structs.create(StringSource, listOf(string, myDescription, myRange))
+            structs.create(StringSource, listOf(string, description, myRange)),
+            
+        describe fun() => let
+            val lineNumber = 1
+            val characterNumber = myRange.start().add(1)
+            in description
+                .concat("\nLine number: ").concat(lineNumber.toString())
+                .concat("\nCharacter number: ").concat(characterNumber.toString())
     }
 };
 
@@ -44,7 +51,9 @@ def setSource fun(value: Any, source: StringSource) =>
 
 def NoSource class() => {
     members {
-        struct fun() => structs.create(NoSource, emptyList)
+        struct fun() => structs.create(NoSource, emptyList),
+        
+        describe fun() => "(no source)"
     }
 }
 

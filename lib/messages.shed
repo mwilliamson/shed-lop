@@ -13,9 +13,10 @@ def UnexpectedInputError class(expected: String, actual: String, location: Strin
         location fun() => location,
         
         struct fun() =>
-            structs.create(UnexpectedInputError, listOf(expected, actual, location))
+            structs.create(UnexpectedInputError, listOf(expected, actual, location)),
             
         toString fun() =>
             "expected ".concat(expected).concat(" but got ").concat(actual)
+                .concat("\nSource: ").concat(location.describe())
     }
 };
