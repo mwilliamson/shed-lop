@@ -23,8 +23,8 @@ import lop.sources.StringSource;
 import lop.strings.createStringSource;
 import lop.testing.isSuccess;
 import lop.testing.isFailure;
-import lop.testing.isFailureWithError;
-import lop.testing.isErrorWithError;
+import lop.testing.isFailureWithMessage;
+import lop.testing.isFatalWithMessage;
 import lop.testing.hasSource;
 import lop.messages.unexpectedInputError;
 
@@ -32,7 +32,7 @@ def source fun(value: String) => createStringSource(value, "raw string");
 
 val testCases = listOf[TestCase](
     TestCase("rules.token fails if sequence is empty", fun() =>
-        assertFailedParseWithError[String](
+        assertIsFailureWithMessage[String](
             rules.token("identifier", "true"),
             emptyList,
             unexpectedInputError("token", "end of token sequence")
@@ -40,7 +40,7 @@ val testCases = listOf[TestCase](
     ),
     
     TestCase("rules.token fails if input token is of wrong type", fun() =>
-        assertFailedParseWithError[String](
+        assertIsFailureWithMessage[String](
             rules.token("identifier", "true"),
             listOf(Token("keyword", "true", source("true"))),
             unexpectedInputError("identifier \"true\"", "keyword \"true\"")
@@ -48,7 +48,7 @@ val testCases = listOf[TestCase](
     ),
     
     TestCase("rules.token fails if input token has wrong value", fun() =>
-        assertFailedParseWithError[String](
+        assertIsFailureWithMessage[String](
             rules.token("identifier", "true"),
             listOf(Token("identifier", "false", source("false"))),
             unexpectedInputError("identifier \"true\"", "identifier \"false\"")
@@ -64,7 +64,7 @@ val testCases = listOf[TestCase](
     ),
     
     TestCase("rules.tokenOfType fails if input token is of wrong type", fun() =>
-        assertFailedParseWithError[String](
+        assertIsFailureWithMessage[String](
             rules.tokenOfType("identifier"),
             listOf(Token("keyword", "true", source("true"))),
             unexpectedInputError("identifier", "keyword \"true\"")
@@ -100,7 +100,7 @@ val testCases = listOf[TestCase](
     ),
     
     TestCase("rules.firstOf fails if no sub-rules match", fun() =>
-        assertFailedParseWithError[String](
+        assertIsFailureWithMessage[String](
             rules.firstOf("literal", listOf(
                 rules.token("keyword", "true"),
                 rules.token("keyword", "false")
@@ -111,7 +111,7 @@ val testCases = listOf[TestCase](
     ),
     
     TestCase("rules.firstOf fatally fails if subrule fails even if following rule is success", fun() =>
-        assertErrorParseWithError(
+        assertIsFatalWithMessage(
             rules.firstOf("literal", listOf(
                 fatalRule,
                 rules.token("keyword", "false"),
@@ -123,7 +123,7 @@ val testCases = listOf[TestCase](
     ),
     
     TestCase("rules.map does nothing to failures", fun() =>
-        assertFailedParseWithError[String](
+        assertIsFailureWithMessage[String](
             rules.map[Unit, Unit](failingRule),
             emptyList,
             unexpectedInputError("<expected>", "<actual>")
@@ -142,7 +142,7 @@ val testCases = listOf[TestCase](
     ),
     
     TestCase("rules.sequence fails if element of sequence is missing", fun() =>
-        assertFailedParseWithError[String](
+        assertIsFailureWithMessage[String](
             rules.sequence()
                 .next(rules.token("keyword", "if"))
                 .next(rules.tokenOfType("identifier"))
@@ -256,7 +256,7 @@ val testCases = listOf[TestCase](
     ),
     
     TestCase("rules.sequence() returns error if missing element after cut", fun() =>
-        assertErrorParseWithError[String](
+        assertIsFatalWithMessage[String](
             rules.sequence()
                 .next(rules.token("keyword", "if"))
                 .cut()
@@ -268,7 +268,7 @@ val testCases = listOf[TestCase](
     ),
     
     TestCase("rules.sequence() returns failure if missing element before cut", fun() =>
-        assertFailedParseWithError[String](
+        assertIsFailureWithMessage[String](
             rules.sequence()
                 .next(rules.token("keyword", "if"))
                 .cut()
@@ -300,7 +300,7 @@ val testCases = listOf[TestCase](
     ),
     
     TestCase("zeroOrMore fails fatally if second match fails fatally", fun() =>
-        assertErrorParseWithError(
+        assertIsFatalWithMessage(
             rules.zeroOrMore(
                 rules.sequence().cut().capture(rules.tokenOfType("identifier")).head()
             ),
@@ -357,7 +357,7 @@ val testCases = listOf[TestCase](
     ),
     
     TestCase("zeroOrMoreWithSeparator fails fatally if first match fails fatally", fun() =>
-        assertErrorParseWithError(
+        assertIsFatalWithMessage(
             rules.zeroOrMoreWithSeparator(fatalRule, rules.token("symbol", ",")),
             emptyList,
             unexpectedInputError("<expected>", "<actual>")
@@ -365,7 +365,7 @@ val testCases = listOf[TestCase](
     ),
     
     TestCase("zeroOrMoreWithSeparator fails fatally if later match fails fatally", fun() =>
-        assertErrorParseWithError(
+        assertIsFatalWithMessage(
             rules.zeroOrMoreWithSeparator(
                 rules.sequence().cut().capture(rules.tokenOfType("identifier")).head(),
                 rules.token("symbol", ",")
@@ -380,7 +380,7 @@ val testCases = listOf[TestCase](
     ),
     
     TestCase("zeroOrMoreWithSeparator fails fatally if separator match fails fatally", fun() =>
-        assertErrorParseWithError(
+        assertIsFatalWithMessage(
             rules.zeroOrMoreWithSeparator(rules.tokenOfType("identifier"), fatalRule),
             listOf(
                 Token("identifier", "go", source("go")),
@@ -407,7 +407,7 @@ val testCases = listOf[TestCase](
     ),
     
     TestCase("optional is fatal if sub-rule is fatal", fun() =>
-        assertErrorParseWithError(
+        assertIsFatalWithMessage(
             rules.optional(fatalRule),
             listOf(Token("identifier", "blah", source("blah"))),
             unexpectedInputError("<expected>", "<actual>")
@@ -435,16 +435,12 @@ def fatalRule fun(tokens: Sequence[Token]) =>
 def stringSource fun(string: String) =>
     createStringSource(string, "raw string");
 
-def assertFailedParse fun[T] => (rule: Rule[T], input: List[Token]) => do {
-    return assertParse[T](rule, input, isFailure);
+def assertIsFailureWithMessage fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do {
+    return assertParse[T](rule, input, isFailureWithMessage(error));
 };
 
-def assertFailedParseWithError fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do {
-    return assertParse[T](rule, input, isFailureWithError(error));
-};
-
-def assertErrorParseWithError fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do {
-    return assertParse[T](rule, input, isErrorWithError(error));
+def assertIsFatalWithMessage fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do {
+    return assertParse[T](rule, input, isFatalWithMessage(error));
 };
 
 def assertSuccessfulParse fun[T] => (rule: Rule[T], input: List[Token], value: T) => do {

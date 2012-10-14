@@ -22,7 +22,7 @@ import lop.messages.unexpectedInputError;
 import lop.results;
 
 import lop.testing.isSuccess;
-import lop.testing.isErrorWithError;
+import lop.testing.isFatalWithMessage;
 
 def source fun(value: String) => createStringSource(value, "raw string");
 
@@ -147,7 +147,7 @@ val testCases = listOf(
     }),
     
     TestCase("fatal failure in infix rule is returned", fun() =>
-        assertFatalParseWithError(
+        assertIsFatalWithMessage(
             pratt.parser("expression",
                 listOf(rules.tokenOfType("identifier")),
                 listOf(pratt.infix("power", fatalRule))
@@ -164,8 +164,8 @@ def fatalRule fun(tokens: Sequence[Token]) =>
 def stringSource fun(string: String) =>
     createStringSource(string, "raw string");
 
-def assertFatalParseWithError fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do {
-    return assertParse[T](rule, input, isErrorWithError(error));
+def assertIsFatalWithMessage fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do {
+    return assertParse[T](rule, input, isFatalWithMessage(error));
 };
 
 def assertSuccessfulParse fun[T] => (rule: Rule[T], input: List[Token], value: T) => do {

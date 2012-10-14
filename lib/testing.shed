@@ -2,8 +2,8 @@ module lop.testing;
 
 members {
     isFailure,
-    isFailureWithError,
-    isErrorWithError,
+    isFailureWithMessage,
+    isFatalWithMessage,
     isSuccess,
     hasSource
 }
@@ -16,7 +16,7 @@ import duck.MatchResult;
 import duck;
 
 import lop.token.Token;
-import lop.results.Failure;
+import lop.results;
 import lop.sources;
 
 val isFailure = object {
@@ -42,7 +42,7 @@ val isFailure = object {
             MatchResult(true, "");
 };
 
-def isFailureWithError fun(error: Error) => object {
+def isFailureWithMessage fun(message: Message) => object {
     members {
         describeSelf,
         matches,
@@ -50,7 +50,7 @@ def isFailureWithError fun(error: Error) => object {
         matchesWithDescription
     }
     
-    def describeSelf fun() => "failure with error: ".concat(represent(error));
+    def describeSelf fun() => "failure with message: ".concat(represent(message));
     
     def matches fun(result: ParseResult) =>
         matchesWithDescription(result).matches();
@@ -61,13 +61,13 @@ def isFailureWithError fun(error: Error) => object {
     def matchesWithDescription fun(result: Result) =>
         if not(result.isFailure()) then
             MatchResult(false, "was not failure, was ".concat(represent(result)))
-        else if not(result.error().equals(error)) then
-            MatchResult(false, "error was ".concat(represent(result.error())))
+        else if not(result.error().equals(message)) then
+            MatchResult(false, "message was ".concat(represent(result.error())))
         else
             MatchResult(true, "");
 };
 
-def isErrorWithError fun(error: Error) => duck.equalTo(Failure(error, true));
+def isFatalWithMessage fun(message: Message) => duck.equalTo(results.fatal(message));
 
 def isSuccess fun[T] => (matcher: Matcher[T]) => object {
     members {
