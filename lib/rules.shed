@@ -44,7 +44,7 @@ def firstOf fun(name: String, rules: List[Rule]) =>
         );
         return sequenceables.head(stops)
             .valueOrElse[ParseResult](fun() => withNextToken(tokens, fun(token: Token) =>
-                results.failure(unexpectedInputError(name, describeToken(token), noSource))
+                results.failure(unexpectedInputError(name, describeToken(token), token.source()))
             ));
     }
     
@@ -55,7 +55,7 @@ def tokenOfType fun(name: String) =>
                 // TODO: should have function to get an option of both head and tail at the same time
                 return results.success(token.value(), tokens.tail());
             } else
-                results.failure(unexpectedInputError(name, describeToken(token), noSource))
+                results.failure(unexpectedInputError(name, describeToken(token), token.source()))
         )
 
 def token fun(name: String, value: String) =>
@@ -67,7 +67,7 @@ def token fun(name: String, value: String) =>
                 results.failure(unexpectedInputError(
                     describeTokenNameAndValue(name, value, noSource),
                     describeToken(token),
-                    noSource
+                    token.source()
                 ))
         )
         
