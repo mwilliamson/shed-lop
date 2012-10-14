@@ -130,7 +130,7 @@ def SequenceRule class[T1, T2, Tn] => (
             previousRule(tokens).bindWithRemaining(fun(previousValue: Tuple[T1, T2], remaining: Sequence[Tokens]) => do {
                 val nextResult = nextRule(remaining);
                 return if nextResult.isFailure() && hasCut then
-                    results.fatal(nextResult.error())
+                    results.fatal(nextResult.message())
                 else
                     nextResult.map(fun(nextValue: Tn) =>
                         func(previousValue, nextValue)

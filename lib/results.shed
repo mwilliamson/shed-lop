@@ -17,22 +17,22 @@ def ParseResult class() => {}
 def success fun[T] => (value: T, remaining: Sequence[Token]) =>
     Success(value, remaining)
 
-def failure fun(error: Error) =>
-    Failure(error, false)
+def failure fun(message: Message) =>
+    Failure(message, false)
     
-def fatal fun(error: Error) =>
-    Failure(error, true)
+def fatal fun(message: Message) =>
+    Failure(message, true)
 
-def Failure class(error: Error, isFatal: Boolean) => {
+def Failure class(message: Message, isFatal: Boolean) => {
     members {
-        map fun[R] => () => Failure(error, isFatal),
+        map fun[R] => () => Failure(message, isFatal),
         bindWithRemaining fun[R] => (func: Function[Nothing, Sequence[Token], ParseResult[R]]) =>
-            Failure(error, isFatal),
+            Failure(message, isFatal),
         isSuccess fun() => false,
         isFailure fun() => not(isFatal),
         isFatal fun() => isFatal,
-        error fun() => error,
-        struct fun() => structs.create(Failure, listOf(error, isFatal))
+        message fun() => message,
+        struct fun() => structs.create(Failure, listOf(message, isFatal))
     }
 }
 

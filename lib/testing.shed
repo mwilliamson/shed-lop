@@ -61,8 +61,8 @@ def isFailureWithMessage fun(message: Message) => object {
     def matchesWithDescription fun(result: Result) =>
         if not(result.isFailure()) then
             MatchResult(false, "was not failure, was ".concat(represent(result)))
-        else if not(result.error().equals(message)) then
-            MatchResult(false, "message was ".concat(represent(result.error())))
+        else if not(result.message().equals(message)) then
+            MatchResult(false, "message was ".concat(represent(result.message())))
         else
             MatchResult(true, "");
 };
