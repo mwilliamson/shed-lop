@@ -23,23 +23,10 @@ import meta;
 
 import lop.token.Token;
 import lop.results.ParseResult;
-import lop.results.Success;
-import lop.results.Failure;
+import lop.results;
 import lop.error.Error;
 import lop.sources;
 import lop.range.Range;
-
-val results = object {
-    members {
-        success,
-        failure
-    }
-    def success fun[T] => (value: T, remaining: StringSource) =>
-        Success[T](value, remaining);
-        
-    def failure fun(expected: String, actual: String) =>
-        Failure(Error(expected, actual), false);
-};
 
 // TODO: should be type Rule[T] = Fun(Sequence[Token]) => ParseResult[T]
 def Rule class() => {}
@@ -56,7 +43,7 @@ def firstOf fun(name: String, rules: List[Rule]) =>
         );
         return sequenceables.head(stops)
             .valueOrElse[ParseResult](fun() => withNextToken(tokens, fun(token: Token) =>
-                results.failure(name, describeToken(token))
+                results.failure(Error(name, describeToken(token)))
             ));
     }
     
@@ -65,18 +52,18 @@ def tokenOfType fun(name: String) =>
         withNextToken(tokens, fun(token: Token) =>
             if token.name().equals(name) then do {
                 // TODO: should have function to get an option of both head and tail at the same time
-                return results.success[String](token.value(), tokens.tail());
+                return results.success(token.value(), tokens.tail());
             } else
-                results.failure(name, describeToken(token))
+                results.failure(Error(name, describeToken(token)))
         )
 
 def token fun(name: String, value: String) =>
     fun(tokens: Sequence[Token]) =>
         withNextToken(tokens, fun(token: Token) =>
             if token.name().equals(name) && token.value().equals(value) then
-                results.success[String](token.value(), tokens.tail())
+                results.success(token.value(), tokens.tail())
             else
-                results.failure(describeTokenNameAndValue(name, value), describeToken(token))
+                results.failure(Error(describeTokenNameAndValue(name, value), describeToken(token)))
         )
         
 def describeToken fun(token: Token) =>
@@ -88,7 +75,7 @@ def describeTokenNameAndValue fun(name: String, value: String) =>
 def withNextToken fun(tokens: Sequence[Token], func: Function[Token, ParseResult[String]]) =>
     sequences.head[Token](tokens)
         .map[Token, ParseResult[String]](func)
-        .valueOrElse[ParseResult](fun() => results.failure("token", "end of token sequence"))
+        .valueOrElse[ParseResult](fun() => results.failure(Error("token", "end of token sequence")))
         
 def map fun[F, T] => (rule: Rule, func: Function[F, T]) =>
     fun(tokens: Sequence[Token]) =>
@@ -143,7 +130,7 @@ def SequenceRule class[T1, T2, Tn] => (
             previousRule(tokens).bindWithRemaining(fun(previousValue: Tuple[T1, T2], remaining: Sequence[Tokens]) => do {
                 val nextResult = nextRule(remaining);
                 return if nextResult.isFailure() && hasCut then
-                    Failure(nextResult.error(), true)
+                    results.fatal(nextResult.error())
                 else
                     nextResult.map(fun(nextValue: Tn) =>
                         func(previousValue, nextValue)

@@ -3,6 +3,7 @@ module lop.results;
 members {
     ParseResult,
     success,
+    failure,
     fatal,
     Failure,
     Success
@@ -16,6 +17,9 @@ def ParseResult class() => {}
 def success fun[T] => (value: T, remaining: Sequence[Token]) =>
     Success(value, remaining)
 
+def failure fun(error: Error) =>
+    Failure(error, false)
+    
 def fatal fun(error: Error) =>
     Failure(error, true)
 
