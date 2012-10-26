@@ -27,7 +27,7 @@ def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: Li
         applyRules(infixRulesUntilInclusive(name))
     
     def rule fun() =>
-        applyRules(infixRules.toSequence())
+        applyRules(infixRules)
         
     def applyRules fun(applicableInfixRules: Sequence[InfixRule[T]]) =>
         fun(tokens: Sequence[Token]) =>
@@ -51,23 +51,21 @@ def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: Li
     def isTerminalResult fun(result: ParseResult[T]) => not(result.isFailure())
         
     def infixRulesUntilInclusive fun(name: String) =>
-        remainingInfixRulesUntil(name, infixRules.toSequence(), true)
+        remainingInfixRulesUntil(name, infixRules, true)
         
     def infixRulesUntilExclusive fun(name: String) =>
-        remainingInfixRulesUntil(name, infixRules.toSequence(), false)
+        remainingInfixRulesUntil(name, infixRules, false)
     
-    def remainingInfixRulesUntil fun(name: String, remainingRules: Sequence[InfixRule[T]], inclusive: Boolean) =>
-        sequences.head(remainingRules)
-            .map(fun(rule: InfixRule[T]) =>
-                if equal(rule.name(), name) then
-                    if inclusive then
-                        sequences.singleton(rule)
-                    else
-                        sequences.nil
+    def remainingInfixRulesUntil fun(name: String, rules: Sequence[InfixRule[T]], inclusive: Boolean) =>
+        sequences.withItem(rules, fun(rule: InfixRule[T], remainingRules: Sequence[InfixRule[T]]) =>
+            if equal(rule.name(), name) then
+                if inclusive then
+                    sequences.singleton(rule)
                 else
-                    sequences.cons(rule, remainingInfixRulesUntil(name, remainingRules.tail()))
-            )
-            .valueOrElse(sequences.nil)
+                    sequences.nil
+            else
+                sequences.cons(rule, remainingInfixRulesUntil(name, remainingRules))
+        ).valueOrElse(sequences.nil)
 }
 
 def InfixRule class[T] => (name: String, rule: Rule[T]) => {

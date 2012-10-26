@@ -89,9 +89,9 @@ def isSuccess fun[T] => (matcher: Matcher[T]) => object {
         if result.isSuccess() then
             if not(matcher.matches(result.value())) then
                 MatchResult(false, "value didn't match: ".concat(matcher.describeMismatch(result.value())))
-            else if not(sequences.isNil(result.remaining())) then
+            else if not(sequences.isNil(result.remaining().currentItem())) then
                 MatchResult(false, "entire input was not consumed, remaining was: ".concat(
-                    strings.joinSequence(", ", lazySequences.map(represent, result.remaining()))
+                    strings.join(", ", lazySequences.map(represent, result.remaining()))
                 ))
             else
                 MatchResult(true, "")

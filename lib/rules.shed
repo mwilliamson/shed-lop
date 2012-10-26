@@ -12,8 +12,6 @@ members {
     addSource
 }
 
-import lazySequenceables;
-import sequenceables;
 import lazySequences;
 import sequences;
 import lists;
@@ -34,15 +32,15 @@ def Rule class() => {}
 
 def firstOf fun(name: String, rules: List[Rule]) =>
     fun(tokens: Sequence[Token]) => do {
-        val ruleResults = lazySequenceables.map[Rule, ParseResult](
+        val ruleResults = lazySequences.map[Rule, ParseResult](
             fun(rule: Rule) => rule(tokens),
             rules
         );
-        val stops = lazySequenceables.filter(
+        val stops = lazySequences.filter(
             fun(result: ParseResult) => or(result.isSuccess(), result.isFatal()),
             ruleResults
         );
-        return sequenceables.head(stops)
+        return sequences.head(stops)
             .valueOrElse[ParseResult](fun() => withNextToken(tokens, fun(token: Token) =>
                 results.failure(unexpectedInputError(name, describeToken(token), token.source()))
             ));
@@ -50,19 +48,19 @@ def firstOf fun(name: String, rules: List[Rule]) =>
     
 def tokenOfType fun(name: String) =>
     fun(tokens: Sequence[Token]) =>
-        withNextToken(tokens, fun(token: Token) =>
+        withNextToken(tokens, fun(token: Token, rest: Sequence[Token]) =>
             if token.name().equals(name) then do {
                 // TODO: should have function to get an option of both head and tail at the same time
-                return results.success(token.value(), tokens.tail());
+                return results.success(token.value(), rest);
             } else
                 results.failure(unexpectedInputError(name, describeToken(token), token.source()))
         )
 
 def token fun(name: String, value: String) =>
     fun(tokens: Sequence[Token]) =>
-        withNextToken(tokens, fun(token: Token) =>
+        withNextToken(tokens, fun(token: Token, rest: Sequence[Token]) =>
             if token.name().equals(name) && token.value().equals(value) then
-                results.success(token.value(), tokens.tail())
+                results.success(token.value(), rest)
             else
                 results.failure(unexpectedInputError(
                     describeTokenNameAndValue(name, value, noSource),
@@ -77,10 +75,12 @@ def describeToken fun(token: Token) =>
 def describeTokenNameAndValue fun(name: String, value: String) =>
     name.concat(" \"").concat(value).concat("\"");
     
-def withNextToken fun(tokens: Sequence[Token], func: Function[Token, ParseResult[String]]) =>
-    sequences.head[Token](tokens)
-        .map[Token, ParseResult[String]](func)
-        .valueOrElse[ParseResult](fun() => results.failure(unexpectedInputError("token", "end of token sequence", noSource)))
+def withNextToken fun(tokens: Sequence[Token], func: Function[Token, ParseResult[String]]) => let
+    val item = tokens.currentItem()
+    in if sequences.isNil(item) then
+        results.failure(unexpectedInputError("token", "end of token sequence", noSource))
+    else
+        func(item.head(), item.tail())
         
 def map fun[F, T] => (rule: Rule, func: Function[F, T]) =>
     fun(tokens: Sequence[Token]) =>
@@ -221,7 +221,7 @@ def addSource fun[T] => (rule: Rule[T]) =>
     in fun(tokens: Sequence[Token]) =>
         // TODO: handle end of input
         rule(tokens).bindWithRemaining(fun(value: T, remaining: Sequence[Token]) => let
-            val source = createSource(tokens.head(), remaining.head())
+            val source = createSource(tokens.currentItem().head(), remaining.currentItem().head())
             val valueWithSource = sources.setSource(value, source)
             in results.success(valueWithSource, remaining)
         )
