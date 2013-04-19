@@ -1,4 +1,4 @@
-module lop.pratt;
+module lop/pratt;
 
 members {
     parser Parser,
@@ -8,8 +8,8 @@ members {
 import lazySequences;
 import sequences;
 
-import lop.rules;
-import lop.results;
+import lop/rules;
+import lop/results;
 
 def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: List[Any]) => {
     members {

@@ -1,4 +1,4 @@
-module lop.rules;
+module lop/rules;
 
 members {
     firstOf,
@@ -19,13 +19,13 @@ import tuples;
 import options;
 import meta;
 
-import lop.token.Token;
-import lop.results.ParseResult;
-import lop.results;
-import lop.messages.unexpectedInputError;
-import lop.sources;
-import lop.sources.noSource;
-import lop.range.Range;
+import lop/token.Token;
+import lop/results.ParseResult;
+import lop/results;
+import lop/messages.unexpectedInputError;
+import lop/sources;
+import lop/sources.noSource;
+import lop/range.Range;
 
 // TODO: should be type Rule[T] = Fun(Sequence[Token]) => ParseResult[T]
 def Rule class() => {}

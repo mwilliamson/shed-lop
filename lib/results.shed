@@ -1,4 +1,4 @@
-module lop.results;
+module lop/results;
 
 members {
     ParseResult,

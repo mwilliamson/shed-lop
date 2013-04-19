@@ -1,4 +1,4 @@
-module lop.range;
+module lop/range;
 
 members {
     Range

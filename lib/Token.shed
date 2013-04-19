@@ -1,4 +1,4 @@
-module lop.token;
+module lop/token;
 
 members {
     Token

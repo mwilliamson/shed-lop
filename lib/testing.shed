@@ -1,4 +1,4 @@
-module lop.testing;
+module lop/testing;
 
 members {
     isFailure,
@@ -15,9 +15,9 @@ import strings;
 import duck.MatchResult;
 import duck;
 
-import lop.token.Token;
-import lop.results;
-import lop.sources;
+import lop/token.Token;
+import lop/results;
+import lop/sources;
 
 val isFailure = object {
     members {

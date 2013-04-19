@@ -1,4 +1,4 @@
-module lop.positions;
+module lop/positions;
 
 members {
     calculateStringCoordinates

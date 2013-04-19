@@ -1,4 +1,4 @@
-module lop.sources;
+module lop/sources;
 
 members {
     StringSource,
@@ -10,8 +10,8 @@ members {
 import structs;
 import meta;
 
-import lop.range.Range;
-import lop.positions;
+import lop/range.Range;
+import lop/positions;
 
 def StringSource class(string: String, description: String, myRange: Range) => {
     members {

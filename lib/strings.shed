@@ -1,11 +1,11 @@
-module lop.strings;
+module lop/strings;
 
 members {
     createStringSource
 }
 
-import lop.sources.StringSource;
-import lop.range.Range;
+import lop/sources.StringSource;
+import lop/range.Range;
 
 def createStringSource fun(string: String, description: String) =>
     StringSource(string, description, Range(0, string.length()));
