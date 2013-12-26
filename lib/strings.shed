@@ -1,8 +1,7 @@
 module lop/strings;
 
-members {
+members::
     createStringSource
-}
 
 import lop/sources.StringSource;
 import lop/range.Range;

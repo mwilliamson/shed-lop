@@ -1,16 +1,13 @@
 module lop/range;
 
-members {
+members::
     Range
-}
 
 import structs;
 
-def Range class(myStart: Double, myEnd: Double) => {
-    members {
+def Range class(myStart: Double, myEnd: Double) => ::
+    members::
         start fun() => myStart,
         end fun() => myEnd,
         
         struct fun() => structs.create(Range, listOf(myStart, myEnd))
-    }
-}

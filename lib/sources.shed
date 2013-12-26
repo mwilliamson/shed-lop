@@ -1,11 +1,10 @@
 module lop/sources;
 
-members {
+members::
     StringSource,
     tryGetSource,
     setSource,
     noSource
-}
 
 import structs;
 import meta;
@@ -13,8 +12,8 @@ import meta;
 import lop/range.Range;
 import lop/positions;
 
-def StringSource class(string: String, description: String, myRange: Range) => {
-    members {
+def StringSource class(string: String, description: String, myRange: Range) => ::
+    members::
         asString fun() => string.substring(myRange.start(), myRange.end()),
         originalString fun() => string,
         description fun() => description,
@@ -38,8 +37,6 @@ def StringSource class(string: String, description: String, myRange: Range) => {
             in description
                 .concat("\nLine number: ").concat(coordinates.lineIndex().add(1).toString())
                 .concat("\nCharacter number: ").concat(coordinates.characterIndex().add(1).toString())
-    }
-};
 
 val sourceKey = meta.createKey(StringSource, "source");
 
@@ -49,12 +46,10 @@ def tryGetSource fun(value: Any) =>
 def setSource fun(value: Any, source: StringSource) =>
     meta.set(value, sourceKey, source)
 
-def NoSource class() => {
-    members {
+def NoSource class() => ::
+    members::
         struct fun() => structs.create(NoSource, emptyList),
         
         describe fun() => "(no source)"
-    }
-}
 
 val noSource = NoSource();

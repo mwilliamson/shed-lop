@@ -1,13 +1,12 @@
 module lop/messages;
 
-members {
+members::
     unexpectedInputError UnexpectedInputError
-}
 
 import structs;
 
-def UnexpectedInputError class(expected: String, actual: String, location: StringSource) => {
-    members {
+def UnexpectedInputError class(expected: String, actual: String, location: StringSource) => ::
+    members::
         expected fun() => expected,
         actual fun() => actual,
         location fun() => location,
@@ -18,5 +17,3 @@ def UnexpectedInputError class(expected: String, actual: String, location: Strin
         toString fun() =>
             "expected ".concat(expected).concat(" but got ").concat(actual)
                 .concat("\nSource: ").concat(location.describe())
-    }
-};

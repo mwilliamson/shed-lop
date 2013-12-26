@@ -1,18 +1,18 @@
 module lop/results;
 
-members {
+members::
     ParseResult,
     success,
     failure,
     fatal,
     Failure,
     Success
-}
 
 import structs;
 
 // TODO: should be an interface
-def ParseResult class() => {}
+def ParseResult class() => ::
+    pass
 
 def success fun[T] => (value: T, remaining: Sequence[Token]) =>
     Success(value, remaining)
@@ -23,8 +23,8 @@ def failure fun(message: Message) =>
 def fatal fun(message: Message) =>
     Failure(message, true)
 
-def Failure class(message: Message, isFatal: Boolean) => {
-    members {
+def Failure class(message: Message, isFatal: Boolean) => ::
+    members::
         map fun[R] => () => Failure(message, isFatal),
         bindWithRemaining fun[R] => (func: Function[Nothing, Sequence[Token], ParseResult[R]]) =>
             Failure(message, isFatal),
@@ -33,11 +33,9 @@ def Failure class(message: Message, isFatal: Boolean) => {
         isFatal fun() => isFatal,
         message fun() => message,
         struct fun() => structs.create(Failure, listOf(message, isFatal))
-    }
-}
 
-def Success class[T] => (myValue: T, myRemaining: Sequence[Token]) => {
-    members {
+def Success class[T] => (myValue: T, myRemaining: Sequence[Token]) => ::
+    members::
         value fun() => myValue,
         remaining fun() => myRemaining,
         map fun[R] => (func: Function[T, R]) =>
@@ -48,5 +46,3 @@ def Success class[T] => (myValue: T, myRemaining: Sequence[Token]) => {
         isFailure fun() => false,
         isFatal fun() => false,
         struct fun() => structs.create(Success, listOf(myValue, myRemaining))
-    }
-}

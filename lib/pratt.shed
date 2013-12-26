@@ -1,9 +1,8 @@
 module lop/pratt;
 
-members {
+members::
     parser Parser,
     infix InfixRule
-}
 
 import lazySequences;
 import sequences;
@@ -11,12 +10,11 @@ import sequences;
 import lop/rules;
 import lop/results;
 
-def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: List[Any]) => {
-    members {
+def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: List[Any]) => ::
+    members::
         leftAssociative,
         rightAssociative,
         rule
-    }
     
     val prefixRule = rules.firstOf(name, prefixRules);
     
@@ -34,7 +32,7 @@ def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: Li
             prefixRule(tokens).bindWithRemaining(applyInfixRules(applicableInfixRules))
     
     def applyInfixRules fun(applicableInfixRules: Sequence[InfixRule[T]]) =>
-        fun(left: T, remaining: Sequence[Token]) => do {
+        fun(left: T, remaining: Sequence[Token]) => do::
             val applyInfixRule = fun(infixRule: InfixRule[T]) => infixRule.apply(remaining);
             val infixResults = lazySequences.map(applyInfixRule, applicableInfixRules);
             val terminalInfixResults = lazySequences.filter(isTerminalResult, infixResults);
@@ -46,7 +44,6 @@ def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: Li
                     result.bindWithRemaining(applyInfixRules(applicableInfixRules))
                 )
                 .valueOrElse(fun() => results.success(left, remaining));
-        };
     
     def isTerminalResult fun(result: ParseResult[T]) => not(result.isFailure())
         
@@ -66,11 +63,8 @@ def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: Li
             else
                 sequences.cons(rule, remainingInfixRulesUntil(name, remainingRules))
         ).valueOrElse(sequences.nil)
-}
 
-def InfixRule class[T] => (name: String, rule: Rule[T]) => {
-    members {
+def InfixRule class[T] => (name: String, rule: Rule[T]) => ::
+    members::
         apply rule,
         name fun() => name
-    }
-}

@@ -1,8 +1,7 @@
 module lop/positions;
 
-members {
+members::
     calculateStringCoordinates
-}
 
 import options;
 
@@ -22,9 +21,7 @@ def calculateStringCoordinates fun(string: String, index: Double) =>
             StringCoordinates(0, index)
     ).valueOrElse(fun() => StringCoordinates(0, index))
 
-def StringCoordinates class(lineIndex: Double, characterIndex: Double) => {
-    members {
+def StringCoordinates class(lineIndex: Double, characterIndex: Double) => ::
+    members::
         lineIndex fun() => lineIndex,
         characterIndex fun() => characterIndex
-    }
-}
