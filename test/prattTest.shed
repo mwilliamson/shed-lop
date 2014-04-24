@@ -1,31 +1,30 @@
-module lop.prattTest;
+module lop/prattTest;
 
-members {
+members ::
     testCases
-}
 
-import sequences;
-import strings;
-import lazySequences;
+import sequences
+import strings
+import lazySequences
 
-import hat.TestCase;
-import duck.assertThat;
-import duck.isList;
-import duck.equalTo;
-import duck.anything;
-import duck.MatchResult;
+import hat.TestCase
+import duck.assertThat
+import duck.isList
+import duck.equalTo
+import duck.anything
+import duck.MatchResult
 
-import lop.pratt;
-import lop.rules;
-import lop.token.Token;
-import lop.messages.unexpectedInputError;
-import lop.results;
-import lop.sources.noSource;
+import lop.pratt
+import lop.rules
+import lop.token.Token
+import lop.messages.unexpectedInputError
+import lop.results
+import lop.sources.noSource
 
-import lop.testing.isSuccess;
-import lop.testing.isFatalWithMessage;
+import lop.testing.isSuccess
+import lop.testing.isFatalWithMessage
 
-def source fun(value: String) => createStringSource(value, "raw string");
+def source fun(value: String) => createStringSource(value, "raw string")
 
 val testCases = listOf(
     TestCase("can parse prefix expression", fun() =>
@@ -39,7 +38,7 @@ val testCases = listOf(
         )
     ),
     
-    TestCase("can parse simple infix expression", fun() => do {
+    TestCase("can parse simple infix expression", fun() => do ::
         def partialCallRule fun(tokens: Sequence[Token]) =>
             rules.sequence()
                 .next(rules.token("symbol", "("))
@@ -65,9 +64,9 @@ val testCases = listOf(
             ),
             equalTo(tuple("print", "name"))
         );
-    }),
+    ),
     
-    TestCase("can parse expression with two left associative operators", fun() => do {
+    TestCase("can parse expression with two left associative operators", fun() => do ::
         def partialAddRule fun(tokens: Sequence[Token]) =>
             rules.sequence()
                 .next(rules.token("symbol", "+"))
@@ -105,9 +104,9 @@ val testCases = listOf(
             ),
             equalTo(tuple("+", tuple("*", tuple("*", "1", "2"), "3"), tuple("*", "4", "5")))
         );
-    }),
+    ),
     
-    TestCase("can parse expression with right associative operators", fun() => do {
+    TestCase("can parse expression with right associative operators", fun() => do ::
         def partialAddRule fun(tokens: Sequence[Token]) =>
             rules.sequence()
                 .next(rules.token("symbol", "+"))
@@ -145,7 +144,7 @@ val testCases = listOf(
             ),
             equalTo(tuple("+", tuple("^", "1", tuple("^", "2", "3")), tuple("^", "4", "5")))
         );
-    }),
+    ),
     
     TestCase("fatal failure in infix rule is returned", fun() =>
         assertIsFatalWithMessage(
@@ -157,23 +156,20 @@ val testCases = listOf(
             unexpectedInputError("<expected>", "<actual>", noSource)
         )
     )
-);
+)
 
 def fatalRule fun(tokens: Sequence[Token]) =>
-    results.fatal(unexpectedInputError("<expected>", "<actual>", noSource));
+    results.fatal(unexpectedInputError("<expected>", "<actual>", noSource))
 
 def stringSource fun(string: String) =>
-    createStringSource(string, "raw string");
+    createStringSource(string, "raw string")
 
-def assertIsFatalWithMessage fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do {
-    return assertParse[T](rule, input, isFatalWithMessage(error));
-};
+def assertIsFatalWithMessage fun[T] => (rule: Rule[T], input: List[Token], error: Error) =>
+    assertParse[T](rule, input, isFatalWithMessage(error));
 
-def assertSuccessfulParse fun[T] => (rule: Rule[T], input: List[Token], value: T) => do {
-    return assertParse[T](rule, input, isSuccess[T](value));
-};
+def assertSuccessfulParse fun[T] => (rule: Rule[T], input: List[Token], value: T) =>
+    assertParse[T](rule, input, isSuccess[T](value));
 
-def assertParse fun[T] => (rule: Rule[T], input: List[Token], matcher: Matcher) => do {
-    val result = rule(input.toSequence());
-    return assertThat[T](result, matcher);
-};
+def assertParse fun[T] => (rule: Rule[T], input: List[Token], matcher: Matcher) => do ::
+    val result = rule(input.toSequence())
+    return assertThat[T](result, matcher)

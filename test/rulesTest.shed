@@ -1,33 +1,32 @@
-module lop.rulesTest;
+module lop/rulesTest;
 
-members {
+members ::
     testCases
-}
 
-import sequences;
-import strings;
-import lazySequences;
-import options;
+import sequences
+import strings
+import lazySequences
+import options
 
-import hat.TestCase;
-import duck.assertThat;
-import duck.isList;
-import duck.equalTo;
-import duck.anything;
-import duck.MatchResult;
+import hat.TestCase
+import duck.assertThat
+import duck.isList
+import duck.equalTo
+import duck.anything
+import duck.MatchResult
 
-import lop.rules;
-import lop.results;
-import lop.token.Token;
-import lop.sources.StringSource;
-import lop.sources.noSource;
-import lop.strings.createStringSource;
-import lop.testing.isSuccess;
-import lop.testing.isFailure;
-import lop.testing.isFailureWithMessage;
-import lop.testing.isFatalWithMessage;
-import lop.testing.hasSource;
-import lop.messages.unexpectedInputError;
+import lop.rules
+import lop.results
+import lop.token.Token
+import lop.sources.StringSource
+import lop.sources.noSource
+import lop.strings.createStringSource
+import lop.testing.isSuccess
+import lop.testing.isFailure
+import lop.testing.isFailureWithMessage
+import lop.testing.isFatalWithMessage
+import lop.testing.hasSource
+import lop.messages.unexpectedInputError
 
 def source fun(value: String) => createStringSource(value, "raw string");
 
@@ -436,19 +435,15 @@ def fatalRule fun(tokens: Sequence[Token]) =>
 def stringSource fun(string: String) =>
     createStringSource(string, "raw string");
 
-def assertIsFailureWithMessage fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do {
+def assertIsFailureWithMessage fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do ::
     return assertParse[T](rule, input, isFailureWithMessage(error));
-};
 
-def assertIsFatalWithMessage fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do {
+def assertIsFatalWithMessage fun[T] => (rule: Rule[T], input: List[Token], error: Error) => do ::
     return assertParse[T](rule, input, isFatalWithMessage(error));
-};
 
-def assertSuccessfulParse fun[T] => (rule: Rule[T], input: List[Token], value: T) => do {
+def assertSuccessfulParse fun[T] => (rule: Rule[T], input: List[Token], value: T) => do ::
     return assertParse[T](rule, input, isSuccess[T](value));
-};
 
-def assertParse fun[T] => (rule: Rule[T], input: List[Token], matcher: Matcher) => do {
+def assertParse fun[T] => (rule: Rule[T], input: List[Token], matcher: Matcher) => do ::
     val result = rule(input.toSequence());
     return assertThat[T](result, matcher);
-};

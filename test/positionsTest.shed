@@ -1,14 +1,13 @@
-module lop.positionsTest;
+module lop/positionsTest
 
-members {
+members ::
     testCases
-}
 
-import hat.TestCase;
-import duck.assertThat;
-import duck.equalTo;
+import hat.TestCase
+import duck.assertThat
+import duck.equalTo
 
-import lop.positions;
+import lop.positions
 
 val testCases = listOf(
     TestCase("start of string has line index of 0", fun() =>
@@ -52,7 +51,7 @@ val testCases = listOf(
             equalTo(3)
         )
     )
-);
+)
 
 def findLineIndex fun(string: String, index: Double) =>
     positions.calculateStringCoordinates(string, index).lineIndex()
