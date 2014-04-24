@@ -7,7 +7,7 @@ import hat.TestCase
 import duck.assertThat
 import duck.equalTo
 
-import lop.messages
+import lop/messages
 
 def source fun(value: String) => object ::
     members ::

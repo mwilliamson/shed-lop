@@ -14,15 +14,15 @@ import duck.equalTo
 import duck.anything
 import duck.MatchResult
 
-import lop.pratt
-import lop.rules
-import lop.token.Token
-import lop.messages.unexpectedInputError
-import lop.results
-import lop.sources.noSource
+import lop/pratt
+import lop/rules
+import lop/token.Token
+import lop/messages.unexpectedInputError
+import lop/results
+import lop/sources.noSource
 
-import lop.testing.isSuccess
-import lop.testing.isFatalWithMessage
+import lop/testing.isSuccess
+import lop/testing.isFatalWithMessage
 
 def source fun(value: String) => createStringSource(value, "raw string")
 
@@ -171,5 +171,5 @@ def assertSuccessfulParse fun[T] => (rule: Rule[T], input: List[Token], value: T
     assertParse[T](rule, input, isSuccess[T](value));
 
 def assertParse fun[T] => (rule: Rule[T], input: List[Token], matcher: Matcher) => do ::
-    val result = rule(input.toSequence())
+    val result = rule(input)
     return assertThat[T](result, matcher)
