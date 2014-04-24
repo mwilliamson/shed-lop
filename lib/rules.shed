@@ -197,24 +197,44 @@ def optional fun[T] => (rule: Rule[T]) =>
         else
             result.map(options.some);
 
-def addSource fun[T] => (rule: Rule[T]) =>
-    let val createSource = fun(from: Token, to: Token) => let
-        // Assumes that the underlying source is consistent
-        // TODO: will include trailing whitespace
+def addSource fun[T] => (rule: Rule[T]) => let
+    val createSource = fun(from: Token, endIndex: Integer) => let
         val fromSource = from.source()
-        val toSource = to.source()
         in sources.StringSource(
             fromSource.originalString(),
             fromSource.description(),
             Range(
                 fromSource.indexRange().start(),
-                toSource.indexRange().start()
+                endIndex
             )
         )
+    
+    val createSourceBetweenTokens = fun(from: Token, to: Token) =>
+        // Assumes that the underlying source is consistent
+        // TODO: will include trailing whitespace
+        createSource(from, to.source().indexRange().start())
+        
+    
     in fun(tokens: Sequence[Token]) =>
-        // TODO: handle end of input
         rule(tokens).bindWithRemaining(fun(value: T, remaining: Sequence[Token]) => let
-            val source = createSource(tokens.currentItem().head(), remaining.currentItem().head())
+            val firstToken = tokens.currentItem().head()
+            val source = if sequences.isEmpty(remaining) then
+                createSource(
+                    firstToken,
+                    last(tokens).source().indexRange().end()
+                )
+            else
+                createSourceBetweenTokens(
+                    firstToken,
+                    remaining.currentItem().head()
+                )
             val valueWithSource = sources.setSource(value, source)
             in results.success(valueWithSource, remaining)
         )
+
+def last fun[T] => (sequence: Sequence[T], previous: T) => let
+    val item = sequence.currentItem()
+    in if sequences.isNil(item) then
+        previous
+    else
+        last(item.tail(), item.head())

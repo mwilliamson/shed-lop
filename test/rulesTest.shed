@@ -423,6 +423,16 @@ val testCases = listOf[TestCase](
         val rule = rules.addSource(rules.tokenOfType("symbol"))
         val result = rule(tokens)
         in assertThat(result.value(), hasSource(input.range(0, 1)))
+    ),
+    
+    TestCase("addSource works when final token is consumed", fun() => let
+        val input = source("-")
+        val tokens = listOf(
+            Token("symbol", "-", input.range(0, 1))
+        )
+        val rule = rules.addSource(rules.tokenOfType("symbol"))
+        val result = rule(tokens)
+        in assertThat(result.value(), hasSource(input.range(0, 1)))
     )
 );
 
