@@ -16,7 +16,9 @@ import duck;
 
 import lop/token.Token;
 import lop/results;
+import lop/results.ParseResult
 import lop/sources;
+import lop/messages.Message
 
 val isFailure = object::
     members::
@@ -33,7 +35,7 @@ val isFailure = object::
     def describeMismatch fun(result: ParseResult) =>
         matchesWithDescription(result).mismatchDescription();
         
-    def matchesWithDescription fun(result: Result) =>
+    def matchesWithDescription fun(result: ParseResult) =>
         if result.isSuccess() then
             MatchResult(false, "was not failure, was ".concat(represent(result)))
         else
@@ -54,7 +56,7 @@ def isFailureWithMessage fun(message: Message) => object::
     def describeMismatch fun(result: ParseResult) =>
         matchesWithDescription(result).mismatchDescription();
         
-    def matchesWithDescription fun(result: Result) =>
+    def matchesWithDescription fun(result: ParseResult) =>
         if not(result.isFailure()) then
             MatchResult(false, "was not failure, was ".concat(represent(result)))
         else if not(equal(result.message(), message)) then
@@ -64,7 +66,7 @@ def isFailureWithMessage fun(message: Message) => object::
 
 def isFatalWithMessage fun(message: Message) => duck.equalTo(results.fatal(message));
 
-def isSuccess fun[T] => (matcher: Matcher[T]) => object::
+def isSuccess fun[T] => (matcher: duck.Matcher[T]) => object::
     members::
         describeSelf,
         matches,
@@ -79,7 +81,7 @@ def isSuccess fun[T] => (matcher: Matcher[T]) => object::
     def describeMismatch fun(result: ParseResult) =>
         matchesWithDescription(result).mismatchDescription();
         
-    def matchesWithDescription fun(result: Result) =>
+    def matchesWithDescription fun(result: ParseResult) =>
         if result.isSuccess() then
             if not(matcher.matches(result.value())) then
                 MatchResult(false, "value didn't match: ".concat(matcher.describeMismatch(result.value())))
@@ -92,7 +94,7 @@ def isSuccess fun[T] => (matcher: Matcher[T]) => object::
         else
             MatchResult(false, "was not success, was ".concat(represent(result)))
 
-def hasSource fun(expectedSource: StringSource) => object::
+def hasSource fun(expectedSource: sources.StringSource) => object::
     members::
         describeSelf,
         matches,

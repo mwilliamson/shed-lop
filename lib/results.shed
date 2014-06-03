@@ -8,7 +8,9 @@ members::
     Failure,
     Success
 
-import structs;
+import structs
+
+import lop/messages.Message
 
 // TODO: should be an interface
 def ParseResult class() => ::

@@ -1,9 +1,15 @@
 module lop/messages;
 
 members::
+    Message
     unexpectedInputError UnexpectedInputError
 
-import structs;
+import structs
+
+import lop/sources.StringSource
+
+def Message class() => ::
+    pass
 
 def UnexpectedInputError class(expected: String, actual: String, location: StringSource) => ::
     members::

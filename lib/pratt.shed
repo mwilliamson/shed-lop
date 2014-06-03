@@ -7,8 +7,10 @@ members::
 import lazySequences;
 import sequences;
 
-import lop/rules;
-import lop/results;
+import lop/rules
+import lop/rules.Rule
+import lop/results
+import lop/results.ParseResult
 
 def Parser class[T] => (name: String, prefixRules: List[Rule[T]], infixRules: List[Any]) => ::
     members::

@@ -3,7 +3,9 @@ module lop/token;
 members::
     Token
 
-import structs;
+import structs
+
+import lop/sources.StringSource
 
 def Token class(name: String, value: String, source: StringSource) => ::
     members::
